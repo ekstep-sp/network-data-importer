@@ -56,6 +56,23 @@
             <artifactId>play-java_2.11</artifactId>
             <version>${play2.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.dataimporter</groupId>
+            <artifactId>data-importer</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.dataexporter</groupId>
+            <artifactId>data-exporter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.commons</groupId>
+            <artifactId>data-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
