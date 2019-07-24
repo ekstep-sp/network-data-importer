@@ -53,4 +53,16 @@ public class Request implements Serializable {
     public void setRequestPath(String requestPath) {
         this.requestPath = requestPath;
     }
+
+
+    public Map<String, Object> requestToMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("Operation",operation);
+        map.put("Time Stamp",ts);
+        map.put("Requested Path",requestPath);
+        map.put("Request Body",request);
+
+        return map;
+    }
+
 }

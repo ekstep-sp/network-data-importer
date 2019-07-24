@@ -5,6 +5,8 @@ import akka.actor.ActorSystem;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import org.commons.exception.ProjectCommonException;
+import org.commons.logger.LoggerEnum;
+import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
 import org.commons.response.Response;
 import org.dataexporter.DataExportManagement;
@@ -30,10 +32,10 @@ private  static Timeout timeout;
 
 
 static {
+    ProjectLogger.log("Creating Actor System in BaseController", LoggerEnum.INFO.name());
     system = ActorSystem.create("data-actor");
     timeout = Timeout.apply(5, TimeUnit.MINUTES);
     actorRef = system.actorOf(DataExportManagement.props(), "export-management");
-
 }
 
 public BaseController() {
@@ -53,14 +55,17 @@ public BaseController() {
                 .thenApplyAsync(response -> {
                     if(response instanceof ProjectCommonException) {
                         ProjectCommonException exc = (ProjectCommonException) response;
+                        ProjectLogger.log("Actor returned an error : ",exc, LoggerEnum.ERROR.name());
                         exc.setRequestPath(request.getRequestPath());
                         return Results.status(exc.getResponseCode(), Json.toJson(exc.toMap()));
                     }
                     else if(response instanceof Response) {
                         Map<String,Object> responseMap = ((Response)response).getResponse();
+                        ProjectLogger.log("Actor Success Response : "+responseMap, LoggerEnum.INFO.name());
                         return ok(Json.toJson(responseMap));
                     }
                     else {
+                        ProjectLogger.log("Unknown response from the Actor", LoggerEnum.WARN.name());
                         return Results.status(400,"Internal Server Error");
                     }
                 },httpExecutionContext.current());

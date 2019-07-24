@@ -1,6 +1,8 @@
 package org.commons.database;
 
 import org.commons.exception.ProjectCommonException;
+import org.commons.logger.LoggerEnum;
+import org.commons.logger.ProjectLogger;
 import org.neo4j.driver.v1.*;
 import org.neo4j.driver.v1.exceptions.AuthenticationException;
 import java.io.IOException;
@@ -16,22 +18,28 @@ public class Neo4jConnectionManager {
 
     static {
         Map<String,String> connectionData = getConnectionData();
+        ProjectLogger.log("Creating connection with the Neo4j Database", LoggerEnum.DEBUG.name());
         if(connectionData.get("url")!=null) {
             try {
                 try {
                     driver = GraphDatabase.driver(
                             connectionData.get("url"));
+                    ProjectLogger.log("Connection created with the Neo4j Database successfully", LoggerEnum.INFO.name());
                 } catch (AuthenticationException e) {
-                    if(connectionData.get("username")!=null && connectionData.get("password")!=null)
-                    driver = GraphDatabase.driver(
-                            connectionData.get("url"), AuthTokens.basic(connectionData.get("username"), connectionData.get("password")));
+                    if(connectionData.get("username")!=null && connectionData.get("password")!=null) {
+                        driver = GraphDatabase.driver(
+                                connectionData.get("url"), AuthTokens.basic(connectionData.get("username"), connectionData.get("password")));
+                        ProjectLogger.log("Connection created with the Neo4j Database successfully", LoggerEnum.INFO.name());
+                    }
                 else {
                         throw new ProjectCommonException(400, "Missing Neo4j Database Credentials", "Unable to get Neo4j database username or password");
                     }
                 }
             } catch (AuthenticationException e) {
+                ProjectLogger.log("Unable to connect to Neo4j Database due to Authentication Failure",e, LoggerEnum.FATAL.name());
                 throw new ProjectCommonException(400, "Neo4j Connection Failed", "Unable to connect to Neo4j due to " + e.toString());
             } catch (Exception e) {
+                ProjectLogger.log("Unable to connect to Neo4j Database",e, LoggerEnum.FATAL.name());
                 throw new ProjectCommonException(400, "Internal Server Error", "Failed to establish connection with Neo4j due to " + e.toString());
             }
         }
@@ -63,6 +71,7 @@ public class Neo4jConnectionManager {
 //            System.out.println( new String(defaultData, StandardCharsets.UTF_8));
         }
         catch (IOException e) {
+            ProjectLogger.log("Unable to read neo4jdb.properties file",e, LoggerEnum.ERROR.name());
             throw new ProjectCommonException(400,"Internal Server Error","Unable to read the neo4jdb.properties file. "+e);
         }
 

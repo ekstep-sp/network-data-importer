@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import controllers.BaseController;
 import controllers.relation.validator.NodeRelationRequestValidator;
 import org.commons.exception.ProjectCommonException;
+import org.commons.logger.LoggerEnum;
+import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
 import org.dataimporter.DataImportManagement;
 import play.libs.Json;
@@ -32,11 +34,13 @@ public class NodeRelationController extends BaseController {
     }
 
     public CompletionStage<Result> createNodeRelation() {
+        ProjectLogger.log("Create Node Relation Api called", LoggerEnum.DEBUG.name());
 
         try {
             request = processRequest(request(), "CreateRelation");
         }
         catch (ProjectCommonException e) {
+            ProjectLogger.log("Error while processing request : ",e, LoggerEnum.ERROR.name());
             return CompletableFuture.supplyAsync(() -> {
                return Results.status(e.getResponseCode(),Json.toJson(e.toMap()));
                     },
@@ -47,11 +51,13 @@ public class NodeRelationController extends BaseController {
     }
 
     public CompletionStage<Result> updateNodeRelation() {
+        ProjectLogger.log("Update Node Relation Api called", LoggerEnum.DEBUG.name());
 
         try {
             request = processRequest(request(), "UpdateRelation");
         }
         catch (ProjectCommonException e) {
+            ProjectLogger.log("Error while processing request : ",e, LoggerEnum.ERROR.name());
             return CompletableFuture.supplyAsync(() -> {
                         return Results.status(e.getResponseCode(),Json.toJson(e.toMap()));
                     },
