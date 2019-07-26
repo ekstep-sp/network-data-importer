@@ -36,19 +36,19 @@ public class NodeRelationController extends BaseController {
     public CompletionStage<Result> createNodeRelation() {
 
         ProjectLogger.log("Create Node Relation Api called", LoggerEnum.DEBUG.name());
-            return processRelationRequest(request(), "CreateRelation",httpExecutionContext);
+            return processRelationRequest(request(), "createRelation",httpExecutionContext);
     }
 
     public CompletionStage<Result> updateNodeRelation() {
 
         ProjectLogger.log("Update Node Relation Api called", LoggerEnum.DEBUG.name());
-            return processRelationRequest(request(), "UpdateRelation",httpExecutionContext);
+            return processRelationRequest(request(), "updateRelation",httpExecutionContext);
     }
 
     public CompletionStage<Result> deleteNodeRelation() {
 
         ProjectLogger.log("Delete Node Relation Api called", LoggerEnum.DEBUG.name());
-            return processRelationRequest(request(), "DeleteRelation",httpExecutionContext);
+            return processRelationRequest(request(), "deleteRelation",httpExecutionContext);
     }
 
 

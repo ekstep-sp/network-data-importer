@@ -56,17 +56,17 @@ public BaseController() {
 
     protected CompletionStage<Result> processNodeRequest(Http.Request request, String operation, HttpExecutionContext httpExecutionContext) throws ProjectCommonException {
 
-    Request customRequest = null;
+    Request customRequest = new Request();
     try {
         new NodeRequestValidator().validateNodeRequest(request);
         Http.MultipartFormData body = request.body().asMultipartFormData();
         Http.MultipartFormData.FilePart<File> filePart = body.getFile("data");
         Map<String, Object> nodeData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());
 
-        String label = ((String[]) body.asFormUrlEncoded().get("label"))[0];
-        customRequest.setOperation(operation);
+//        String label = ((String[]) body.asFormUrlEncoded().get("label"))[0];
+        customRequest = new Request(operation);
         customRequest.setRequestPath(request().path());
-        customRequest.setRequestParameter("nodeSourceLabel", label.trim());
+//        customRequest.setRequestParameter("nodeSourceLabel", label.trim());
         customRequest.setRequestParameter("data", nodeData);
     }
     catch (ProjectCommonException e) {
@@ -89,14 +89,14 @@ public BaseController() {
         Http.MultipartFormData.FilePart<File> filePart = body.getFile("data");
         Map<String, Object> nodeRelationData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());
 
-        String sourceNodeLabel = ((String[]) body.asFormUrlEncoded().get("source-label"))[0];
-        String targetNodeLabel = ((String[]) body.asFormUrlEncoded().get("target-label"))[0];
+//        String sourceNodeLabel = ((String[]) body.asFormUrlEncoded().get("source-label"))[0];
+//        String targetNodeLabel = ((String[]) body.asFormUrlEncoded().get("target-label"))[0];
 
         customRequest = new Request(operation);
         customRequest.setRequestPath(request().path());
 
-        customRequest.setRequestParameter("nodeSourceLabel", sourceNodeLabel.trim());
-        customRequest.setRequestParameter("nodeTargetLabel", targetNodeLabel.trim());
+//        customRequest.setRequestParameter("nodeSourceLabel", sourceNodeLabel.trim());
+//        customRequest.setRequestParameter("nodeTargetLabel", targetNodeLabel.trim());
         customRequest.setRequestParameter("data", nodeRelationData);
         }
         catch (ProjectCommonException e) {

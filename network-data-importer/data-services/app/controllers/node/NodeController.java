@@ -25,19 +25,19 @@ public class NodeController extends BaseController {
 
     public CompletionStage<Result> createNode() {
         ProjectLogger.log("Create Node Api called", LoggerEnum.DEBUG.name());
-            return processNodeRequest(request(), "CreateNode",httpExecutionContext);
+            return processNodeRequest(request(), "createNode",httpExecutionContext);
     }
 
     public CompletionStage<Result> updateNode() {
 
         ProjectLogger.log("Update Node Api called", LoggerEnum.DEBUG.name());
-        return processNodeRequest(request(), "UpdateNode", httpExecutionContext);
+        return processNodeRequest(request(), "updateNode", httpExecutionContext);
     }
 
     public CompletionStage<Result> deleteNode() {
 
         ProjectLogger.log("Delete Node Api called", LoggerEnum.DEBUG.name());
-            return processNodeRequest(request(), "DeleteNode",httpExecutionContext);
+            return processNodeRequest(request(), "deleteNode",httpExecutionContext);
     }
 
 

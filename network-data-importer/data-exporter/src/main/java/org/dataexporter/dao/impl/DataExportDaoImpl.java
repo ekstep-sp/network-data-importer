@@ -26,7 +26,7 @@ public class DataExportDaoImpl implements DataExportDao {
 
         try {
             session = Neo4jConnectionManager.getSession();
-            if(session ==null)
+            if(session ==null || !session.isOpen())
             {
                 throw new ProjectCommonException(400,"Fail to connect to Database","Unable to create a session with the Neo4j Driver");
             }
@@ -42,8 +42,9 @@ public class DataExportDaoImpl implements DataExportDao {
     }
 
     @Override
-    public Response createNode(String nodeLabel, Map<String,Object> nodeData) {
+    public Response createNode(Map<String,Object> nodeData) {
 
+        session = Neo4jConnectionManager.getSession();
         Response response= new Response();
         response.setOperation("Create Node");
         int dataCount=0;
@@ -60,8 +61,8 @@ public class DataExportDaoImpl implements DataExportDao {
             }
             try {
 
-                StringBuilder query = new StringBuilder("MATCH (a:`" + nodeLabel + "` { `");
-                query.append(header.get(0).trim()).append("`: \"").append(nodeDetailsEach.get(0).trim()).append("\"");
+                StringBuilder query = new StringBuilder("MATCH (a:`" + nodeDetailsEach.get(0).trim() + "` { `");
+                query.append(header.get(1).trim()).append("`: \"").append(nodeDetailsEach.get(1).trim()).append("\"");
                 query.append("}) RETURN a");
                 ProjectLogger.log("Query generated to check if Node already exists : " + query, LoggerEnum.INFO.name());
 
@@ -74,10 +75,10 @@ public class DataExportDaoImpl implements DataExportDao {
                 }
                 else {
 
-                    query = new StringBuilder("CREATE (a:`" + nodeLabel + "` { ");
+                    query = new StringBuilder("CREATE (a:`" + nodeDetailsEach.get(0).trim() + "` { ");
 
                     boolean check = false;
-                    for (int i = 0; i < header.size(); i++) {
+                    for (int i = 1; i < header.size(); i++) {
                         if (!nodeDetailsEach.get(i).isEmpty()) {
                             query.append("`").append(header.get(i).trim()).append("`");
                             query.append(" : \"").append(nodeDetailsEach.get(i).trim()).append("\"");
@@ -102,7 +103,7 @@ public class DataExportDaoImpl implements DataExportDao {
                     response.addSuccess();
                 }
             }
-            catch (Exception e) {
+            catch (Error | Exception e) {
                 ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
                 response.addErrorData("Error in data",dataCount+1);
                 e.printStackTrace();
@@ -114,8 +115,9 @@ public class DataExportDaoImpl implements DataExportDao {
 
 
     @Override
-    public Response updateNode(String nodeLabel, Map<String,Object> nodeData) throws Exception{
+    public Response updateNode(Map<String,Object> nodeData) throws Exception{
 
+        session = Neo4jConnectionManager.getSession();
         Response response= new Response();
         response.setOperation("Update Node");
         int dataCount=0;
@@ -130,8 +132,8 @@ public class DataExportDaoImpl implements DataExportDao {
 
             try {
 
-                StringBuilder query = new StringBuilder("MATCH (a:`" + nodeLabel + "` { `");
-                query.append(header.get(0).trim()).append("`: \"").append(nodeDetailsEach.get(0).trim()).append("\"");
+                StringBuilder query = new StringBuilder("MATCH (a:`" + nodeDetailsEach.get(0).trim() + "` { `");
+                query.append(header.get(1).trim()).append("`: \"").append(nodeDetailsEach.get(1).trim()).append("\"");
                 query.append("}) RETURN a");
                 ProjectLogger.log("Query generated to Create Node : "+query, LoggerEnum.INFO.name());
 
@@ -147,10 +149,10 @@ public class DataExportDaoImpl implements DataExportDao {
 
                     else {
                         boolean check = false;
-                        query = new StringBuilder("MATCH (a:`" + nodeLabel + "` { `");
-                        query.append(header.get(0).trim()).append("`: \"").append(nodeDetailsEach.get(0).trim()).append("\"");
+                        query = new StringBuilder("MATCH (a:`" + nodeDetailsEach.get(0).trim() + "` { `");
+                        query.append(header.get(1).trim()).append("`: \"").append(nodeDetailsEach.get(1).trim()).append("\"");
                         query.append("}) SET ");
-                        for (int i = 1; i < header.size(); i++) {
+                        for (int i = 2; i < header.size(); i++) {
                             if (!nodeDetailsEach.get(i).isEmpty()) {
                                 query.append("a.`").append(header.get(i).trim());
                                 query.append("`=\"").append(nodeDetailsEach.get(i).trim()).append("\"");
@@ -182,7 +184,7 @@ public class DataExportDaoImpl implements DataExportDao {
                 }
 
             }
-            catch (Exception e) {
+            catch (Error |Exception e) {
                 ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
                 response.addErrorData("Error in data",dataCount+1);
                 e.printStackTrace();
@@ -195,16 +197,18 @@ public class DataExportDaoImpl implements DataExportDao {
 
 
     @Override
-    public Response deleteNode(String nodeLabel, Map<String,Object> nodeData) throws Exception {
+    public Response deleteNode(Map<String,Object> nodeData) throws Exception {
 
+        session = Neo4jConnectionManager.getSession();
         return null;
     }
 
 
         @Override
-    public Response createNodeRelation(String nodeSourceLabel, String nodeTargetLabel, Map<String,Object> relationData) throws Exception
+    public Response createNodeRelation(Map<String,Object> relationData) throws Exception
     {
 
+        session = Neo4jConnectionManager.getSession();
         Response response= new Response();
         response.setOperation("Create Node Relation");
         int dataCount=0;
@@ -218,9 +222,9 @@ public class DataExportDaoImpl implements DataExportDao {
 
             try {
 
-                StringBuilder query = new StringBuilder("MATCH (a:`" + nodeSourceLabel + "` {`" + header.get(0).trim() + "`: \"" + relationDetailEach.get(0).trim() + "\"})-[");
-                query.append("r:`").append(relationDetailEach.get(2).trim()).append("`");
-                query.append("]->(b:`").append(nodeTargetLabel).append("` {`").append(header.get(1).trim()).append("`: \"").append(relationDetailEach.get(1).trim()).append("\"})");
+                StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})-[");
+                query.append("r:`").append(relationDetailEach.get(4).trim()).append("`");
+                query.append("]->(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
                 query.append(" CREATE (a)-[r:`").append(relationDetailEach.get(2).trim()).append("` {");
                 ProjectLogger.log("Query generated to check if Node Relation already exists : " + query, LoggerEnum.INFO.name());
 
@@ -231,11 +235,11 @@ public class DataExportDaoImpl implements DataExportDao {
                     ProjectLogger.log("Relation already exists : "+(recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
                     response.addErrorData("Data Already Exists",dataCount+1);
                 } else {
-                    query = new StringBuilder("MATCH (a:`" + nodeSourceLabel + "` {`" + header.get(0).trim() + "`: \"" + relationDetailEach.get(0).trim() + "\"}),");
-                    query.append("(b:`").append(nodeTargetLabel).append("` {`").append(header.get(1).trim()).append("`: \"").append(relationDetailEach.get(1).trim()).append("\"})");
+                    query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"}),");
+                    query.append("(b:`").append(relationDetailEach.get(3).trim()).append("` {`").append(header.get(4).trim()).append("`: \"").append(relationDetailEach.get(4).trim()).append("\"})");
                     query.append(" CREATE (a)-[r:`").append(relationDetailEach.get(2).trim()).append("` {");
                     boolean check = false;
-                    for (int i = 3; i < header.size(); i++) {
+                    for (int i = 5; i < header.size(); i++) {
                         if (!relationDetailEach.get(i).isEmpty()) {
                             query.append("`").append(header.get(i).trim()).append("`");
                             query.append(" : \"").append(relationDetailEach.get(i).trim()).append("\"");
@@ -260,7 +264,7 @@ public class DataExportDaoImpl implements DataExportDao {
                     response.addSuccess();
                 }
             }
-            catch (Exception e) {
+            catch (Error |Exception e) {
                 ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
                 response.addErrorData("Error in data",dataCount+1);
                 e.printStackTrace();
@@ -272,9 +276,10 @@ public class DataExportDaoImpl implements DataExportDao {
     }
 
     @Override
-    public Response updateNodeRelation(String nodeSourceLabel, String nodeTargetLabel, Map<String,Object> relationData) throws Exception{
+    public Response updateNodeRelation(Map<String,Object> relationData) throws Exception{
 
 
+        session = Neo4jConnectionManager.getSession();
         Response response= new Response();
         response.setOperation("Update Node Relation");
         int dataCount=0;
@@ -289,9 +294,9 @@ public class DataExportDaoImpl implements DataExportDao {
 
             try {
 
-                StringBuilder query = new StringBuilder("MATCH (a:`" + nodeSourceLabel + "` {`" + header.get(0).trim() + "`: \"" + relationDetailEach.get(0).trim() + "\"})");
-                query.append("-[r: `").append(relationDetailEach.get(2).trim()).append("`]-");
-                query.append("(b:`").append(nodeTargetLabel).append("` {`").append(header.get(1).trim()).append("`: \"").append(relationDetailEach.get(1).trim()).append("\"})");
+                StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})");
+                query.append("-[r: `").append(relationDetailEach.get(4).trim()).append("`]-");
+                query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
                 query.append(" RETURN r");
                 ProjectLogger.log("Query generated to check Node Relation Existence : " + query, LoggerEnum.INFO.name());
 
@@ -307,11 +312,11 @@ public class DataExportDaoImpl implements DataExportDao {
                     else {
 
                         boolean check = false;
-                        query = new StringBuilder("MATCH (a:`" + nodeSourceLabel + "` {`" + header.get(0).trim() + "`: \"" + relationDetailEach.get(0).trim() + "\"})");
-                        query.append("-[r: `").append(relationDetailEach.get(2).trim()).append("`]-");
-                        query.append("(b:`").append(nodeTargetLabel).append("` {`").append(header.get(1).trim()).append("`: \"").append(relationDetailEach.get(1).trim()).append("\"})");
+                        query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})");
+                        query.append("-[r: `").append(relationDetailEach.get(4).trim()).append("`]-");
+                        query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(4).trim()).append("`: \"").append(relationDetailEach.get(4).trim()).append("\"})");
                         query.append(" SET ");
-                        for (int i = 3; i < header.size(); i++) {
+                        for (int i = 5; i < header.size(); i++) {
                             if (!relationDetailEach.get(i).isEmpty()) {
                                 query.append("r.`").append(header.get(i).trim());
                                 query.append("` = \"").append(relationDetailEach.get(i).trim()).append("\"");
@@ -338,10 +343,11 @@ public class DataExportDaoImpl implements DataExportDao {
                 }
                 else {
                     ProjectLogger.log("No Such Data Present", LoggerEnum.WARN.name());
-                    response.addErrorData("No Such Data Present",dataCount+1);                }
+                    response.addErrorData("No Such Data Present",dataCount+1);
+                }
 
             }
-            catch (Exception e) {
+            catch (Error |Exception e) {
                 ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
                 response.addErrorData("Error in data",dataCount+1);
                 e.printStackTrace();
@@ -352,8 +358,9 @@ public class DataExportDaoImpl implements DataExportDao {
     }
 
     @Override
-    public Response deleteNodeRelation(String nodeSourceLabel, String nodeTargetLabel, Map<String,Object> relationData) throws Exception {
+    public Response deleteNodeRelation(Map<String,Object> relationData) throws Exception {
 
+        session = Neo4jConnectionManager.getSession();
         return null;
     }
 

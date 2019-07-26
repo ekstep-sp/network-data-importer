@@ -29,7 +29,7 @@ public class DataExportManagement extends AbstractActor {
         receive(ReceiveBuilder
                 .match(Request.class, request -> {
 
-                    String operation = request.getOperation().toLowerCase();
+                    String operation = request.getOperation();
                     switch (operation) {
                         case "createNode":
                             createNode(request);
@@ -50,7 +50,7 @@ public class DataExportManagement extends AbstractActor {
                             deleteNodeRelation(request);
                             break;
                         default:
-                            throw new ProjectCommonException(400, "Unsupported Operation", "Request Operation is not supported : " + operation);
+                            unSupportedOperation(request);
                     }
                     })
                 .build());
@@ -86,7 +86,8 @@ public class DataExportManagement extends AbstractActor {
         ProjectLogger.log("Create Node method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = dataExportDao.createNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+//            Response response = dataExportDao.createNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.createNode((Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -106,7 +107,8 @@ public class DataExportManagement extends AbstractActor {
         ProjectLogger.log("Update Node method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = dataExportDao.updateNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+//            Response response = dataExportDao.updateNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.updateNode((Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -126,7 +128,8 @@ public class DataExportManagement extends AbstractActor {
         ProjectLogger.log("Delete Node method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = dataExportDao.deleteNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+//            Response response = dataExportDao.deleteNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.deleteNode((Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -146,7 +149,8 @@ public class DataExportManagement extends AbstractActor {
         ProjectLogger.log("Create Node Relation method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = dataExportDao.createNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
+//            Response response = dataExportDao.createNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.createNodeRelation((Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -166,7 +170,8 @@ public class DataExportManagement extends AbstractActor {
         ProjectLogger.log("Update Node Relation method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = dataExportDao.updateNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
+//            Response response = dataExportDao.updateNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.updateNodeRelation((Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -187,7 +192,8 @@ public class DataExportManagement extends AbstractActor {
         ProjectLogger.log("Delete Node Relation method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = dataExportDao.deleteNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
+//            Response response = dataExportDao.deleteNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.deleteNodeRelation((Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -200,6 +206,14 @@ public class DataExportManagement extends AbstractActor {
             ProjectLogger.log("Error in delete node relation method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
+    }
+
+    private void unSupportedOperation(Request request) {
+
+        ProjectCommonException e = new ProjectCommonException(400, "Unsupported Operation", "Requested Operation is not supported : " + request.getOperation());
+        ProjectLogger.log("Unsupported Operation",e, LoggerEnum.ERROR.name());
+        sender().tell(e,self());
+
     }
 
 }

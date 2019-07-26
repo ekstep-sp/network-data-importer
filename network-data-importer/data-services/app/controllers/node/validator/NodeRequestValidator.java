@@ -14,19 +14,19 @@ public class NodeRequestValidator {
 
         Http.MultipartFormData body = request.body().asMultipartFormData();
         // check
-        if(body.getFile("data")==null)
+        if(body == null || body.getFile("data")==null)
             throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide parameter 'data' ");
 
 
-        String[] data = (String[]) body.asFormUrlEncoded().get("label");
-        if(data==null || data.length==0)
-            throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide parameter 'label' ");
-
-        if(data.length>1)
-            throw new ProjectCommonException(400,"Unique Value Missing","Please provide single value of 'label' ");
-
-        if(data[0]==null || data[0].isEmpty())
-                throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide a value in the parameter 'label' ");
+//        String[] data = (String[]) body.asFormUrlEncoded().get("label");
+//        if(data==null || data.length==0)
+//            throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide parameter 'label' ");
+//
+//        if(data.length>1)
+//            throw new ProjectCommonException(400,"Unique Value Missing","Please provide single value of 'label' ");
+//
+//        if(data[0]==null || data[0].isEmpty())
+//                throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide a value in the parameter 'label' ");
 
     }
 
