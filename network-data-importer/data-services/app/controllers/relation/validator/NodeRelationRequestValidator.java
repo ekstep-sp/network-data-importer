@@ -5,7 +5,7 @@ import play.mvc.Http;
 
 public class NodeRelationRequestValidator {
 
-    public void validateNodeRelationRequest(Http.Request request) {
+    public void validateNodeRelationRequest(Http.Request request) throws ProjectCommonException {
 
         Http.MultipartFormData body = request.body().asMultipartFormData();
         if(body.getFile("data")==null)

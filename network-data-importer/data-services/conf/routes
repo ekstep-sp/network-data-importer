@@ -10,6 +10,12 @@ POST    /v1/node/create                   controllers.node.NodeController.create
 
 POST    /v1/node/update                   controllers.node.NodeController.updateNode()
 
+POST    /v1/node/delete                   controllers.node.NodeController.deleteNode()
+
 POST    /v1/node/relation/create          controllers.relation.NodeRelationController.createNodeRelation()
 
 POST    /v1/node/relation/update          controllers.relation.NodeRelationController.updateNodeRelation()
+
+POST    /v1/node/relation/delete          controllers.relation.NodeRelationController.deleteNodeRelation()
+
+POST    /v1/auth/create                   controllers.auth.AuthenticationController.createUserToken()

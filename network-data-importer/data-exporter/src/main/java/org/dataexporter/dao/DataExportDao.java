@@ -10,8 +10,12 @@ public interface DataExportDao {
 
     Response updateNode(String nodeLabel, Map<String,Object> nodedata) throws Exception;
 
+    Response deleteNode(String nodeLabel, Map<String,Object> nodedata) throws Exception;
+
     Response createNodeRelation(String nodeSourceLabel, String nodeTargetLabel, Map<String,Object> relationData) throws Exception;
 
     Response updateNodeRelation(String nodeSourceLabel, String nodeTargetLabel, Map<String,Object> relationData) throws Exception;
+
+    Response deleteNodeRelation(String nodeSourceLabel, String nodeTargetLabel, Map<String,Object> relationData) throws Exception;
 
 }

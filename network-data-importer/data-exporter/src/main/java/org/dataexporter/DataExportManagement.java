@@ -8,6 +8,7 @@ import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
 import org.commons.response.Response;
+import org.dataexporter.dao.DataExportDao;
 import org.dataexporter.dao.impl.DataExportDaoImpl;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import java.util.Map;
 public class DataExportManagement extends AbstractActor {
 
 
+    DataExportDao dataExportDao = new DataExportDaoImpl();
 
     public static Props props() {
         ProjectLogger.log("Inside DataExportManagement props() method : Creating New Actor", LoggerEnum.DEBUG.name());
@@ -29,17 +31,23 @@ public class DataExportManagement extends AbstractActor {
 
                     String operation = request.getOperation().toLowerCase();
                     switch (operation) {
-                        case "createnode":
+                        case "createNode":
                             createNode(request);
                             break;
-                        case "updatenode":
+                        case "updateNode":
                             updateNode(request);
                             break;
-                        case "createrelation":
+                        case "deleteNode":
+                            deleteNode(request);
+                            break;
+                        case "createRelation":
                             createNodeRelation(request);
                             break;
-                        case "updaterelation":
+                        case "updateRelation":
                             updateNodeRelation(request);
+                            break;
+                        case "deleteRelation":
+                            deleteNodeRelation(request);
                             break;
                         default:
                             throw new ProjectCommonException(400, "Unsupported Operation", "Request Operation is not supported : " + operation);
@@ -78,7 +86,7 @@ public class DataExportManagement extends AbstractActor {
         ProjectLogger.log("Create Node method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = new DataExportDaoImpl().createNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.createNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -98,7 +106,7 @@ public class DataExportManagement extends AbstractActor {
         ProjectLogger.log("Update Node method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = new DataExportDaoImpl().updateNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.updateNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -113,12 +121,32 @@ public class DataExportManagement extends AbstractActor {
         }
     }
 
+    private void deleteNode(Request request) {
+
+        ProjectLogger.log("Delete Node method called", LoggerEnum.DEBUG.name());
+        try {
+            Map<String,Object> requestMap = request.getRequest();
+            Response response = dataExportDao.deleteNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+            sender().tell(response, self());
+        }
+        catch (ProjectCommonException e)
+        {
+            ProjectLogger.log("Error in delete node method",e, LoggerEnum.ERROR.name());
+            sender().tell(e,self());
+        }
+        catch (Exception e)
+        {
+            ProjectLogger.log("Error in delete node method",e, LoggerEnum.ERROR.name());
+            sender().tell(e,self());
+        }
+    }
+
     private void createNodeRelation(Request request) {
 
         ProjectLogger.log("Create Node Relation method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = new DataExportDaoImpl().createNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.createNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -138,7 +166,7 @@ public class DataExportManagement extends AbstractActor {
         ProjectLogger.log("Update Node Relation method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-            Response response = new DataExportDaoImpl().updateNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
+            Response response = dataExportDao.updateNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
         catch (ProjectCommonException e)
@@ -149,6 +177,27 @@ public class DataExportManagement extends AbstractActor {
         catch (Exception e)
         {
             ProjectLogger.log("Error in update node relation method",e, LoggerEnum.ERROR.name());
+            sender().tell(e,self());
+        }
+    }
+
+
+    private void deleteNodeRelation(Request request) {
+
+        ProjectLogger.log("Delete Node Relation method called", LoggerEnum.DEBUG.name());
+        try {
+            Map<String,Object> requestMap = request.getRequest();
+            Response response = dataExportDao.deleteNodeRelation((String) requestMap.get("nodeSourceLabel"), (String) requestMap.get("nodeTargetLabel"), (Map<String, Object>) requestMap.get("data"));
+            sender().tell(response, self());
+        }
+        catch (ProjectCommonException e)
+        {
+            ProjectLogger.log("Error in delete node relation method",e, LoggerEnum.ERROR.name());
+            sender().tell(e,self());
+        }
+        catch (Exception e)
+        {
+            ProjectLogger.log("Error in delete node relation method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
     }

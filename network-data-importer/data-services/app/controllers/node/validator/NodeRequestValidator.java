@@ -10,9 +10,10 @@ import java.io.File;
 
 public class NodeRequestValidator {
 
-    public void validateNodeRequest(Request request) {
+    public void validateNodeRequest(Request request) throws ProjectCommonException {
 
         Http.MultipartFormData body = request.body().asMultipartFormData();
+        // check
         if(body.getFile("data")==null)
             throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide parameter 'data' ");
 

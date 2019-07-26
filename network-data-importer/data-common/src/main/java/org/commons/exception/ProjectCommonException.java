@@ -1,6 +1,8 @@
 package org.commons.exception;
 
 
+import org.commons.responsecode.ResponseCode;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -22,6 +24,13 @@ public class ProjectCommonException extends RuntimeException
         this.code = code;
         this.message = message;
         this.responseCode = responseCode;
+    }
+
+    public ProjectCommonException(ResponseCode rsc)
+    {
+        this.responseCode = rsc.getResponseCode();
+        this.code = rsc.getErrorCode();
+        this.message = rsc.getErrorMessage();
     }
 
     public String getCode() {
@@ -58,18 +67,19 @@ public class ProjectCommonException extends RuntimeException
 
     public Map<String,Object> toMap() {
         Map<String,Object> response = new HashMap<>();
-        Map<String,Object> errorMessage = new HashMap<>();
+        Map<String,Object> errorDetails = new HashMap<>();
 
-        errorMessage.put("Status",responseCode);
-        errorMessage.put("Error Code",code);
-        errorMessage.put("Error Message",message);
+        errorDetails.put("Status",responseCode);
+        errorDetails.put("Error Code",code);
+        errorDetails.put("Error Message",message);
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date = new Date();
 
         response.put("Time Stamp",formatter.format(date));
-        response.put("Error Message",errorMessage);
+        response.put("Error Details",errorDetails);
 
         return response;
     }
+
 }

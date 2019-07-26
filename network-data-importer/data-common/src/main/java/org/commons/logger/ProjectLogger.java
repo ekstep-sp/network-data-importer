@@ -1,6 +1,11 @@
 package org.commons.logger;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.commons.exception.ProjectCommonException;
+
+import java.io.IOException;
+import java.util.Properties;
 
 public class ProjectLogger {
 
@@ -8,6 +13,16 @@ public class ProjectLogger {
 
     static {
         logger = Logger.getLogger(ProjectLogger.class);
+        try {
+            Properties p = new Properties();
+            p.load(ProjectLogger.class.getClass().getResourceAsStream("/logger/log4j.properties"));
+            PropertyConfigurator.configure(p);
+        }
+        catch (IOException e) {
+
+            ProjectLogger.log("Unable to read log4j.properties file",e, LoggerEnum.ERROR.name());
+            throw new ProjectCommonException(400,"Internal Server Error","Unable to read the log4j.properties file. "+e);
+        }
     }
 
     public static Logger getProjectLogger() {

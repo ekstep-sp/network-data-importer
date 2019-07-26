@@ -34,59 +34,23 @@ public class NodeRelationController extends BaseController {
     }
 
     public CompletionStage<Result> createNodeRelation() {
+
         ProjectLogger.log("Create Node Relation Api called", LoggerEnum.DEBUG.name());
-
-        try {
-            request = processRequest(request(), "CreateRelation");
-        }
-        catch (ProjectCommonException e) {
-            ProjectLogger.log("Error while processing request : ",e, LoggerEnum.ERROR.name());
-            return CompletableFuture.supplyAsync(() -> {
-               return Results.status(e.getResponseCode(),Json.toJson(e.toMap()));
-                    },
-                    httpExecutionContext.current());
-        }
-
-        return (new BaseController().handleRequest(request,httpExecutionContext));
+            return processRelationRequest(request(), "CreateRelation",httpExecutionContext);
     }
 
     public CompletionStage<Result> updateNodeRelation() {
+
         ProjectLogger.log("Update Node Relation Api called", LoggerEnum.DEBUG.name());
+            return processRelationRequest(request(), "UpdateRelation",httpExecutionContext);
+    }
 
-        try {
-            request = processRequest(request(), "UpdateRelation");
-        }
-        catch (ProjectCommonException e) {
-            ProjectLogger.log("Error while processing request : ",e, LoggerEnum.ERROR.name());
-            return CompletableFuture.supplyAsync(() -> {
-                        return Results.status(e.getResponseCode(),Json.toJson(e.toMap()));
-                    },
-                    httpExecutionContext.current());
-        }
-        return (new BaseController().handleRequest(request,httpExecutionContext));
+    public CompletionStage<Result> deleteNodeRelation() {
+
+        ProjectLogger.log("Delete Node Relation Api called", LoggerEnum.DEBUG.name());
+            return processRelationRequest(request(), "DeleteRelation",httpExecutionContext);
     }
 
 
-    private Request processRequest(Http.Request request, String operation) throws ProjectCommonException {
-
-        Request customRequest = null;
-
-            new NodeRelationRequestValidator().validateNodeRelationRequest(request);
-            Http.MultipartFormData body = request.body().asMultipartFormData();
-            Http.MultipartFormData.FilePart<File> filePart = body.getFile("data");
-            Map<String, Object> nodeRelationData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());
-
-            String sourceNodeLabel = ((String[]) body.asFormUrlEncoded().get("source-label"))[0];
-            String targetNodeLabel = ((String[]) body.asFormUrlEncoded().get("target-label"))[0];
-
-            customRequest = new Request(operation);
-            customRequest.setRequestPath(request().path());
-
-            customRequest.setRequestParameter("nodeSourceLabel", sourceNodeLabel.trim());
-            customRequest.setRequestParameter("nodeTargetLabel", targetNodeLabel.trim());
-            customRequest.setRequestParameter("data", nodeRelationData);
-
-        return customRequest;
-    }
 
 }
