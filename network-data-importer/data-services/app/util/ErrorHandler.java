@@ -14,7 +14,10 @@ import javax.inject.Singleton;
 
 @Singleton
 public class ErrorHandler implements HttpErrorHandler {
+    // To handle all errors in the project
+
     public CompletionStage<Result> onClientError(RequestHeader request, int statusCode, String message) {
+        // To handle all client errors in the project
 
         ProjectLogger.log("Global: onClientError called for path = " + request.path(), LoggerEnum.ERROR.name());
         if(statusCode == 404)
@@ -27,6 +30,7 @@ public class ErrorHandler implements HttpErrorHandler {
     }
 
     public CompletionStage<Result> onServerError(RequestHeader request, Throwable exception) {
+        // To handle all Server errors in the project
 
         ProjectLogger.log("Global: onServerError called for path = " + request.path(), LoggerEnum.INFO.name());
         ProjectCommonException commonException = null;

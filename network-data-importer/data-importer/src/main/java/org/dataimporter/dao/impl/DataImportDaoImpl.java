@@ -24,6 +24,7 @@ public class DataImportDaoImpl implements DataImportDao {
     @Override
     public Map<String,Object> readDataFromExcel(File input){
 
+        // Reading the EXCEL file provided in the request
         List<List<String>> contentList = new ArrayList<>();
         List<String> headers = new ArrayList<>();
         try {
@@ -104,6 +105,7 @@ public class DataImportDaoImpl implements DataImportDao {
     @Override
     public Map<String,Object> readDataFromCsv(File input) {
 
+        // Reading the CSV file provided in the request
         List<List<String>> contentList = new ArrayList<>();
         List<String> header = new ArrayList<>();
         int count = -1;

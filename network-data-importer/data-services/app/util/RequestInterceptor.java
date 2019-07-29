@@ -17,6 +17,8 @@ import java.util.concurrent.CompletionStage;
 import java.lang.reflect.Method;
 
 public class RequestInterceptor implements play.http.ActionCreator {
+    // To handle authentication
+
     @Override
     public Action createAction(Http.Request request, Method actionMethod) {
         return new Action.Simple() {

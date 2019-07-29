@@ -17,6 +17,7 @@ import java.util.Map;
 public class AuthenticationController extends Controller {
 
     public Result createUserToken() {
+        // To generate JWT Authentication Token
 
         ProjectLogger.log("Create User Token Api called", LoggerEnum.DEBUG.name());
 

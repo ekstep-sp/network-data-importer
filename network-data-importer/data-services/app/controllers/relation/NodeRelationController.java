@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public class NodeRelationController extends BaseController {
+    // to handle all Node Relation related requests
 
     private HttpExecutionContext httpExecutionContext;
     Request request;

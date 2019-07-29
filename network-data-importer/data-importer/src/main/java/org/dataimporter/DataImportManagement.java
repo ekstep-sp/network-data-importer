@@ -23,8 +23,10 @@ public class DataImportManagement {
             String strFileExtn = fileName.substring(fileName.lastIndexOf(".") + 1);
 
             if (strFileExtn.equalsIgnoreCase("xlsx")) {
+                // Check if the file is of type Excel
                 allData = dataImporter.readDataFromExcel(input);
             } else if (strFileExtn.equalsIgnoreCase("csv")) {
+                // Check if the file is of type csv
                 allData = dataImporter.readDataFromCsv(input);
             } else {
                 ProjectLogger.log("File Type not Supported", LoggerEnum.ERROR.name());

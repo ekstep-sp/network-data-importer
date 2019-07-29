@@ -47,6 +47,7 @@ public class DataExportDaoImpl implements DataExportDao {
     @Override
     public Response createNode(Map<String,Object> nodeData) {
 
+        // To create a Node
         Response response= new Response();
         response.setOperation("Create Node");
         int dataCount=0;
@@ -70,6 +71,7 @@ public class DataExportDaoImpl implements DataExportDao {
 
                 result = session.run(query.toString());
                 if (result.hasNext()) {
+                    // Check if Node already Exists
                     List<Record> recordList = result.list();
                     int nodeCount = recordList.size();
                     ProjectLogger.log("Node already exists : "+(recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
@@ -77,6 +79,7 @@ public class DataExportDaoImpl implements DataExportDao {
                 }
                 else {
 
+                    //Creating a Node
                     query = new StringBuilder("CREATE (a:`" + nodeDetailsEach.get(0).trim() + "` { ");
 
                     boolean check = false;
@@ -118,6 +121,7 @@ public class DataExportDaoImpl implements DataExportDao {
     @Override
     public Response updateNode(Map<String,Object> nodeData) throws Exception{
 
+        // Update a Node
         Response response= new Response();
         response.setOperation("Update Node");
         int dataCount=0;
@@ -139,11 +143,13 @@ public class DataExportDaoImpl implements DataExportDao {
 
                 result = session.run(query.toString());
                 if(result.hasNext()) {
+                    // Check if the Node Exists
                     List<Record> recordList = result.list();
                     int nodeCount = recordList.size();
 
                     if(nodeCount > 1)
                     {
+                        // update the Node
                         ProjectLogger.log("Duplicate Data Present : "+(recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
                         response.addErrorData("Duplicate Data Present",dataCount+1);                    }
 
@@ -206,6 +212,7 @@ public class DataExportDaoImpl implements DataExportDao {
     public Response createNodeRelation(Map<String,Object> relationData) throws Exception
     {
 
+        // Create Node Relationship
         Response response= new Response();
         response.setOperation("Create Node Relation");
         int dataCount=0;
@@ -227,11 +234,13 @@ public class DataExportDaoImpl implements DataExportDao {
 
                 result = session.run(query.toString());
                 if (result.hasNext()) {
+                    // Check if the relationship between nodes already exists
                     List<Record> recordList = result.list();
                     int nodeCount = recordList.size();
                     ProjectLogger.log("Relation already exists : "+(recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
                     response.addErrorData("Data Already Exists",dataCount+1);
                 } else {
+                    // Create Relationship Between Nodes
                     query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"}),");
                     query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
                     query.append(" CREATE (a)-[r:`").append(relationDetailEach.get(4).trim()).append("` {");
@@ -274,7 +283,7 @@ public class DataExportDaoImpl implements DataExportDao {
     @Override
     public Response updateNodeRelation(Map<String,Object> relationData) throws Exception{
 
-
+        // To update Node Relationships
         Response response= new Response();
         response.setOperation("Update Node Relation");
         int dataCount=0;
@@ -297,6 +306,7 @@ public class DataExportDaoImpl implements DataExportDao {
 
                 result = session.run(query.toString());
                 if(result.hasNext()) {
+                    // Check if the relationship exists between Nodes
                     List<Record> recordList = result.list();
                     int relationCount = recordList.size();
                     if(relationCount > 1)
@@ -305,7 +315,7 @@ public class DataExportDaoImpl implements DataExportDao {
                         response.addErrorData("Duplicate Data Present",dataCount+1);
                     }
                     else {
-
+                        // Updating relationship between Node
                         boolean check = false;
                         query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})");
                         query.append("-[r: `").append(relationDetailEach.get(4).trim()).append("`]-");
