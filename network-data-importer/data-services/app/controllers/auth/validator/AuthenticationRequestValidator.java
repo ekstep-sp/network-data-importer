@@ -3,6 +3,7 @@ package controllers.auth.validator;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
+import org.commons.responsecode.ResponseCode;
 import play.mvc.Http;
 
 import java.util.Map;
@@ -14,21 +15,21 @@ public class AuthenticationRequestValidator {
         try {
             Map<String, String[]> body = request.body().asFormUrlEncoded();
             if (body == null || body.isEmpty())
-                throw new ProjectCommonException(400, "Mandatory Parameter Missing", "Please provide parameter 'issuer' and 'subject'");
+                throw new ProjectCommonException(ResponseCode.mandatoryParametersMissing, "issuer","subject");
 
             String[] issuer = body.get("issuer");
             if (issuer == null || issuer.length == 0 || issuer[0].trim().isEmpty())
-                throw new ProjectCommonException(400, "Mandatory Parameter Missing", "Please provide parameter 'issuer' ");
+                throw new ProjectCommonException(ResponseCode.mandatoryParameterMissing,"issuer");
 
             String[] subject = body.get("subject");
             if (subject == null || subject.length == 0 || subject[0].trim().isEmpty())
-                throw new ProjectCommonException(400, "Mandatory Parameter Missing", "Please provide parameter 'subject' ");
+                throw new ProjectCommonException(ResponseCode.mandatoryParameterMissing,"subject");
 
             if (issuer.length > 1)
-                throw new ProjectCommonException(400, "Unique Value Missing", "Please provide single value of 'issuer' ");
+                throw new ProjectCommonException(ResponseCode.uniqueValueError,"issuer");
 
             if (subject.length > 1)
-                throw new ProjectCommonException(400, "Unique Value Missing", "Please provide single value of 'subject' ");
+                throw new ProjectCommonException(ResponseCode.uniqueValueError,"subject");
 
         }
         catch (ProjectCommonException e)

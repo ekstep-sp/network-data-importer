@@ -1,6 +1,9 @@
 package org.dataimporter;
 
 import org.commons.exception.ProjectCommonException;
+import org.commons.logger.LoggerEnum;
+import org.commons.logger.ProjectLogger;
+import org.commons.responsecode.ResponseCode;
 import org.dataimporter.dao.DataImportDao;
 import org.dataimporter.dao.impl.DataImportDaoImpl;
 
@@ -14,7 +17,7 @@ public class DataImportManagement {
 
         DataImportDao dataImporter = new DataImportDaoImpl();
 
-        Map<String, Object> allData = new HashMap<>();
+        Map<String, Object> allData;
 
         try {
             String strFileExtn = fileName.substring(fileName.lastIndexOf(".") + 1);
@@ -24,7 +27,8 @@ public class DataImportManagement {
             } else if (strFileExtn.equalsIgnoreCase("csv")) {
                 allData = dataImporter.readDataFromCsv(input);
             } else {
-                throw new ProjectCommonException(400, "Invalid File Type", "Please provide file of type '.csv' or '.xlsx' ");
+                ProjectLogger.log("File Type not Supported", LoggerEnum.ERROR.name());
+                throw new ProjectCommonException(ResponseCode.unsupportedFileTypeError,".csv",".xlsx");
             }
 
         }

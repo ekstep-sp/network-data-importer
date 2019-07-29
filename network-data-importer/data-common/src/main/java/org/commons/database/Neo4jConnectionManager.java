@@ -3,6 +3,7 @@ package org.commons.database;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
+import org.commons.responsecode.ResponseCode;
 import org.neo4j.driver.v1.*;
 import org.neo4j.driver.v1.exceptions.AuthenticationException;
 import java.io.IOException;
@@ -32,20 +33,20 @@ public class Neo4jConnectionManager {
                         ProjectLogger.log("Connection created with the Neo4j Database successfully", LoggerEnum.INFO.name());
                     }
                 else {
-                        throw new ProjectCommonException(400, "Missing Neo4j Database Credentials", "Unable to get Neo4j database username or password");
+                        throw new ProjectCommonException(ResponseCode.databaseCredentialsMissingError);
                     }
                 }
             } catch (AuthenticationException e) {
                 ProjectLogger.log("Unable to connect to Neo4j Database due to Authentication Failure",e, LoggerEnum.FATAL.name());
-                throw new ProjectCommonException(400, "Neo4j Connection Failed", "Unable to connect to Neo4j due to " + e.toString());
+                throw new ProjectCommonException(ResponseCode.databaseAuthenticationError);
             } catch (Exception e) {
                 ProjectLogger.log("Unable to connect to Neo4j Database",e, LoggerEnum.FATAL.name());
-                throw new ProjectCommonException(400, "Internal Server Error", "Failed to establish connection with Neo4j due to " + e.toString());
+                throw new ProjectCommonException(ResponseCode.databaseConnectionError);
             }
         }
         else
         {
-            throw new ProjectCommonException(400,"Missing Neo4j Database Credentials","Unable to get Neo4j database connection url");
+            throw new ProjectCommonException(ResponseCode.databaseUrlMissingError);
         }
     }
 
@@ -72,7 +73,7 @@ public class Neo4jConnectionManager {
         }
         catch (IOException e) {
             ProjectLogger.log("Unable to read neo4jdb.properties file",e, LoggerEnum.ERROR.name());
-            throw new ProjectCommonException(400,"Internal Server Error","Unable to read the neo4jdb.properties file. "+e);
+            throw new ProjectCommonException(ResponseCode.fileMissingError,"neo4jdb.properties");
         }
 
         String url = System.getenv("neo4j_base_url");

@@ -6,6 +6,7 @@ import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
+import org.commons.responsecode.ResponseCode;
 import org.dataexporter.dao.DataExportDao;
 import org.neo4j.driver.internal.value.NodeValue;
 import org.neo4j.driver.internal.value.RelationshipValue;
@@ -28,7 +29,8 @@ public class DataExportDaoImpl implements DataExportDao {
             session = Neo4jConnectionManager.getSession();
             if(session ==null || !session.isOpen())
             {
-                throw new ProjectCommonException(400,"Fail to connect to Database","Unable to create a session with the Neo4j Driver");
+                ProjectLogger.log("Error, session could not be instantiated in neo4j", LoggerEnum.ERROR.name());
+                throw new ProjectCommonException(ResponseCode.databaseSessionCreationError);
             }
         }
         catch (ProjectCommonException e)
@@ -37,14 +39,14 @@ public class DataExportDaoImpl implements DataExportDao {
         }
         catch (Exception | Error e)
         {
-            throw new ProjectCommonException(400,"Internal Server Error","Unable to get database connection. "+e);
+            ProjectLogger.log("Error in database while creating session", LoggerEnum.ERROR.name());
+            throw new ProjectCommonException(ResponseCode.databaseConnectionError);
         }
     }
 
     @Override
     public Response createNode(Map<String,Object> nodeData) {
 
-        session = Neo4jConnectionManager.getSession();
         Response response= new Response();
         response.setOperation("Create Node");
         int dataCount=0;
@@ -106,7 +108,6 @@ public class DataExportDaoImpl implements DataExportDao {
             catch (Error | Exception e) {
                 ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
                 response.addErrorData("Error in data",dataCount+1);
-                e.printStackTrace();
             }
         }
         session.close();
@@ -117,7 +118,6 @@ public class DataExportDaoImpl implements DataExportDao {
     @Override
     public Response updateNode(Map<String,Object> nodeData) throws Exception{
 
-        session = Neo4jConnectionManager.getSession();
         Response response= new Response();
         response.setOperation("Update Node");
         int dataCount=0;
@@ -187,7 +187,6 @@ public class DataExportDaoImpl implements DataExportDao {
             catch (Error |Exception e) {
                 ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
                 response.addErrorData("Error in data",dataCount+1);
-                e.printStackTrace();
             }
         }
         session.close();
@@ -199,7 +198,6 @@ public class DataExportDaoImpl implements DataExportDao {
     @Override
     public Response deleteNode(Map<String,Object> nodeData) throws Exception {
 
-        session = Neo4jConnectionManager.getSession();
         return null;
     }
 
@@ -208,7 +206,6 @@ public class DataExportDaoImpl implements DataExportDao {
     public Response createNodeRelation(Map<String,Object> relationData) throws Exception
     {
 
-        session = Neo4jConnectionManager.getSession();
         Response response= new Response();
         response.setOperation("Create Node Relation");
         int dataCount=0;
@@ -267,7 +264,6 @@ public class DataExportDaoImpl implements DataExportDao {
             catch (Error |Exception e) {
                 ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
                 response.addErrorData("Error in data",dataCount+1);
-                e.printStackTrace();
             }
         }
         session.close();
@@ -279,7 +275,6 @@ public class DataExportDaoImpl implements DataExportDao {
     public Response updateNodeRelation(Map<String,Object> relationData) throws Exception{
 
 
-        session = Neo4jConnectionManager.getSession();
         Response response= new Response();
         response.setOperation("Update Node Relation");
         int dataCount=0;
@@ -350,7 +345,6 @@ public class DataExportDaoImpl implements DataExportDao {
             catch (Error |Exception e) {
                 ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
                 response.addErrorData("Error in data",dataCount+1);
-                e.printStackTrace();
             }
         }
         session.close();
@@ -360,7 +354,6 @@ public class DataExportDaoImpl implements DataExportDao {
     @Override
     public Response deleteNodeRelation(Map<String,Object> relationData) throws Exception {
 
-        session = Neo4jConnectionManager.getSession();
         return null;
     }
 

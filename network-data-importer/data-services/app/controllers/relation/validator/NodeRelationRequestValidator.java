@@ -1,6 +1,7 @@
 package controllers.relation.validator;
 
 import org.commons.exception.ProjectCommonException;
+import org.commons.responsecode.ResponseCode;
 import play.mvc.Http;
 
 public class NodeRelationRequestValidator {
@@ -9,7 +10,9 @@ public class NodeRelationRequestValidator {
 
         Http.MultipartFormData body = request.body().asMultipartFormData();
         if(body == null || body.getFile("data")==null)
-            throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide parameter 'data' ");
+            throw new ProjectCommonException(ResponseCode.mandatoryParameterMissing,"data");
+        if(body.getFiles().size()>1)
+            throw new ProjectCommonException(ResponseCode.multipleFilesFoundException,"data");
 
 
 //        String[] data = (String[]) body.asFormUrlEncoded().get("source-label");

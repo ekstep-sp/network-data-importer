@@ -8,6 +8,7 @@ import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
 import org.commons.response.Response;
+import org.commons.responsecode.ResponseCode;
 import org.dataexporter.dao.DataExportDao;
 import org.dataexporter.dao.impl.DataExportDaoImpl;
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.Map;
 public class DataExportManagement extends AbstractActor {
 
 
-    DataExportDao dataExportDao = new DataExportDaoImpl();
+    DataExportDao dataExportDao;
 
     public static Props props() {
         ProjectLogger.log("Inside DataExportManagement props() method : Creating New Actor", LoggerEnum.DEBUG.name());
@@ -28,7 +29,7 @@ public class DataExportManagement extends AbstractActor {
 
         receive(ReceiveBuilder
                 .match(Request.class, request -> {
-
+                    dataExportDao = new DataExportDaoImpl();
                     String operation = request.getOperation();
                     switch (operation) {
                         case "createNode":
@@ -92,12 +93,10 @@ public class DataExportManagement extends AbstractActor {
         }
         catch (ProjectCommonException e)
         {
-            ProjectLogger.log("Error in create node method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
-        catch (Exception e)
+        catch (Exception | Error e)
         {
-            ProjectLogger.log("Error in create node method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
     }
@@ -113,12 +112,10 @@ public class DataExportManagement extends AbstractActor {
         }
         catch (ProjectCommonException e)
         {
-            ProjectLogger.log("Error in update node method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
         catch (Exception e)
         {
-            ProjectLogger.log("Error in update node method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
     }
@@ -134,12 +131,10 @@ public class DataExportManagement extends AbstractActor {
         }
         catch (ProjectCommonException e)
         {
-            ProjectLogger.log("Error in delete node method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
         catch (Exception e)
         {
-            ProjectLogger.log("Error in delete node method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
     }
@@ -155,12 +150,10 @@ public class DataExportManagement extends AbstractActor {
         }
         catch (ProjectCommonException e)
         {
-            ProjectLogger.log("Error in create node relation method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
         catch (Exception e)
         {
-            ProjectLogger.log("Error in create node relation method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
     }
@@ -176,12 +169,10 @@ public class DataExportManagement extends AbstractActor {
         }
         catch (ProjectCommonException e)
         {
-            ProjectLogger.log("Error in update node relation method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
         catch (Exception e)
         {
-            ProjectLogger.log("Error in update node relation method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
     }
@@ -198,22 +189,19 @@ public class DataExportManagement extends AbstractActor {
         }
         catch (ProjectCommonException e)
         {
-            ProjectLogger.log("Error in delete node relation method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
         catch (Exception e)
         {
-            ProjectLogger.log("Error in delete node relation method",e, LoggerEnum.ERROR.name());
             sender().tell(e,self());
         }
     }
 
     private void unSupportedOperation(Request request) {
 
-        ProjectCommonException e = new ProjectCommonException(400, "Unsupported Operation", "Requested Operation is not supported : " + request.getOperation());
+        ProjectCommonException e = new ProjectCommonException(ResponseCode.unsupportedActorOperation, request.getOperation());
         ProjectLogger.log("Unsupported Operation",e, LoggerEnum.ERROR.name());
         sender().tell(e,self());
-
     }
 
 }

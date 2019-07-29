@@ -11,6 +11,7 @@ import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
 import org.commons.response.Response;
+import org.commons.responsecode.ResponseCode;
 import org.dataexporter.DataExportManagement;
 import org.dataimporter.DataImportManagement;
 import play.libs.Json;
@@ -40,7 +41,7 @@ private  static Timeout timeout;
 static {
     ProjectLogger.log("Creating Actor System in BaseController", LoggerEnum.INFO.name());
     system = ActorSystem.create("data-actor");
-    timeout = Timeout.apply(5, TimeUnit.MINUTES);
+    timeout = Timeout.apply(1, TimeUnit.MINUTES);
     actorRef = system.actorOf(DataExportManagement.props(), "export-management");
 }
 
@@ -56,7 +57,7 @@ public BaseController() {
 
     protected CompletionStage<Result> processNodeRequest(Http.Request request, String operation, HttpExecutionContext httpExecutionContext) throws ProjectCommonException {
 
-    Request customRequest = new Request();
+    Request customRequest;
     try {
         new NodeRequestValidator().validateNodeRequest(request);
         Http.MultipartFormData body = request.body().asMultipartFormData();
@@ -82,7 +83,7 @@ public BaseController() {
     protected CompletionStage<Result> processRelationRequest(Http.Request request, String operation, HttpExecutionContext httpExecutionContext) throws ProjectCommonException {
 
 
-        Request customRequest = null;
+        Request customRequest;
         try {
         new NodeRelationRequestValidator().validateNodeRelationRequest(request);
         Http.MultipartFormData body = request.body().asMultipartFormData();
@@ -110,7 +111,7 @@ public BaseController() {
     }
 
 
-    public CompletionStage<Result> handleCustomRequest(Request request,HttpExecutionContext httpExecutionContext) {
+    private CompletionStage<Result> handleCustomRequest(Request request,HttpExecutionContext httpExecutionContext) {
 
 
         return FutureConverters.toJava(
@@ -129,7 +130,8 @@ public BaseController() {
                     }
                     else {
                         ProjectLogger.log("Unknown response from the Actor", LoggerEnum.WARN.name());
-                        return Results.status(400,"Internal Server Error");
+                        ProjectCommonException exc = new ProjectCommonException(ResponseCode.internalServerError);
+                        return Results.status(exc.getResponseCode(),Json.toJson(exc.toMap()));
                     }
                 },httpExecutionContext.current());
     }

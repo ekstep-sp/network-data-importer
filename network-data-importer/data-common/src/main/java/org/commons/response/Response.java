@@ -1,9 +1,10 @@
 package org.commons.response;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Response {
+public class Response implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private Integer successCount;

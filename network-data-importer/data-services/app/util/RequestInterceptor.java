@@ -4,6 +4,7 @@ import org.commons.auth.JwtAuthentication;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
+import org.commons.responsecode.ResponseCode;
 import play.libs.Json;
 import play.mvc.Action;
 import play.mvc.Http;
@@ -26,7 +27,7 @@ public class RequestInterceptor implements play.http.ActionCreator {
                 if(!request.path().equals("/v1/auth/create")) {
                     try {
                         if (request.getHeader("user-token") == null || request.getHeader("user-token").isEmpty()) {
-                            throw new ProjectCommonException(401, "Unauthorised", "User Authentication required. Please provide the 'user-token'");
+                            throw new ProjectCommonException(ResponseCode.unAuthorized);
                         } else {
                             new JwtAuthentication().verifyUserToken(request.getHeader("user-token"));
                         }

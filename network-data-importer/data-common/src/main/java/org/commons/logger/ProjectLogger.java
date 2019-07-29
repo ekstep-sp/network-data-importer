@@ -3,6 +3,7 @@ package org.commons.logger;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.commons.exception.ProjectCommonException;
+import org.commons.responsecode.ResponseCode;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -21,7 +22,7 @@ public class ProjectLogger {
         catch (IOException e) {
 
             ProjectLogger.log("Unable to read log4j.properties file",e, LoggerEnum.ERROR.name());
-            throw new ProjectCommonException(400,"Internal Server Error","Unable to read the log4j.properties file. "+e);
+            throw new ProjectCommonException(ResponseCode.fileMissingError,"log4j.properties");
         }
     }
 

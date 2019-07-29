@@ -8,6 +8,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.commons.exception.ProjectCommonException;
+import org.commons.logger.LoggerEnum;
+import org.commons.logger.ProjectLogger;
+import org.commons.responsecode.ResponseCode;
 import org.dataimporter.dao.DataImportDao;
 
 import java.io.*;
@@ -83,10 +86,11 @@ public class DataImportDaoImpl implements DataImportDao {
                 }
             }
         } catch(IOException e){
-            e.printStackTrace();
-            throw new ProjectCommonException(400,"File data format incorrect","Please provide an excel file with proper data format. "+e);
+            ProjectLogger.log("Unable to process excel file due to incorrect format of data : ",e, LoggerEnum.ERROR.name());
+            throw new ProjectCommonException(ResponseCode.fileDataError);
         } catch (Exception e) {
-            throw new ProjectCommonException(400,"Internal Error","Failed to read the excel file "+e);
+            ProjectLogger.log("Internal Processing error while reading excel file : ",e, LoggerEnum.ERROR.name());
+            throw new ProjectCommonException(ResponseCode.internalFileProcessingError);
         }
 
         allData.put("header",headers);
@@ -131,10 +135,11 @@ public class DataImportDaoImpl implements DataImportDao {
             }
         }
         catch(IOException e){
-            e.printStackTrace();
-            throw new ProjectCommonException(400,"File data format incorrect","Please provide a csv file with proper data format. "+e);
+            ProjectLogger.log("Unable to process csv file due to incorrect format of data : ",e, LoggerEnum.ERROR.name());
+            throw new ProjectCommonException(ResponseCode.fileDataError);
         } catch (Exception e) {
-            throw new ProjectCommonException(400,"Internal Error","Fail to read the csv file. "+e);
+            ProjectLogger.log("Internal Processing error while reading csv file : ",e, LoggerEnum.ERROR.name());
+            throw new ProjectCommonException(ResponseCode.internalFileProcessingError);
         }
         allData.put("header",header);
         allData.put("data",contentList);

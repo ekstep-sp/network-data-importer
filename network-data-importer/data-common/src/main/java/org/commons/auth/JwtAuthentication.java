@@ -7,7 +7,7 @@ import io.jsonwebtoken.*;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
-import org.commons.response.Response;
+import org.commons.responsecode.ResponseCode;
 //import io.jsonwebtoken.impl.Base64Codec;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -70,13 +70,13 @@ public class JwtAuthentication {
             try {
                 Claims body = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
                 if (!body.getIssuer().equals(issuer) || !body.getSubject().equals(subject))
-                    throw new ProjectCommonException(403, "Forbidden", "Please provide a valid 'user-token'");
+                    throw new ProjectCommonException(ResponseCode.invalidTokenCredentials,"user-token");
             } catch (ExpiredJwtException e) {
-                throw new ProjectCommonException(403, "Forbidden", "User Token expired. Please create and provide a new 'user-token'.");
+                throw new ProjectCommonException(ResponseCode.expiredTokenError,"user-token");
             } catch (MalformedJwtException | UnsupportedJwtException | SignatureException e) {
-                throw new ProjectCommonException(403, "Forbidden", "Please provide a valid 'user-token'");
+                throw new ProjectCommonException(ResponseCode.invalidTokenCredentials,"user-token");
             } catch (Exception e) {
-                throw new ProjectCommonException(401, "Unauthorised", "You are not Authorised");
+                throw new ProjectCommonException(ResponseCode.unAuthorized);
             }
         }
         catch (ProjectCommonException e) {

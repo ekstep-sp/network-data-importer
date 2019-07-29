@@ -3,6 +3,7 @@ package org.commons.exception;
 
 import org.commons.responsecode.ResponseCode;
 
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,6 +32,14 @@ public class ProjectCommonException extends RuntimeException
         this.responseCode = rsc.getResponseCode();
         this.code = rsc.getErrorCode();
         this.message = rsc.getErrorMessage();
+    }
+
+
+    public ProjectCommonException(ResponseCode rsc, String... args)
+    {
+        this.responseCode = rsc.getResponseCode();
+        this.code = rsc.getErrorCode();
+        this.message = MessageFormat.format(rsc.getErrorMessage(),args);
     }
 
     public String getCode() {
@@ -70,7 +79,7 @@ public class ProjectCommonException extends RuntimeException
         Map<String,Object> errorDetails = new HashMap<>();
 
         errorDetails.put("Status",responseCode);
-        errorDetails.put("Error Code",code);
+        errorDetails.put("Error Code",code.toUpperCase());
         errorDetails.put("Error Message",message);
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");

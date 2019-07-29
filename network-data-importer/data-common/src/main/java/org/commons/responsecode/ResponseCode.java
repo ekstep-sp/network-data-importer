@@ -2,9 +2,25 @@ package org.commons.responsecode;
 
 public enum ResponseCode {
 
-    unAuthorized("UNAUTHORIZED_USER", "You are not authorized."),
-    OK(200);
-
+    actorTimeoutError(408,"Actor Connection Error", "Service is not able to connect with actor."),
+    internalServerError(500,"Internal Server Error", "Process failed,please try again later."),
+    unAuthorized(401, "Unauthorised", "User Authentication required. Please provide the 'user-token'."),
+    mandatoryParameterMissing(400,"Mandatory Parameter Missing","Please provide parameter {0}."),
+    mandatoryParametersMissing(400,"Mandatory Parameters Missing","Please provide parameter '{0}' and {1}."),
+    multipleFilesFoundException(400,"Multiple Files Found","Please provide a single File in parameter {0} "),
+    databaseSessionCreationError(502,"Database Error","Unable to create a session with the Neo4j Driver."),
+    databaseConnectionError(502,"Internal Server Error","Failed to establish connection with Neo4j database."),
+    unsupportedActorOperation(400, "Unsupported Actor Operation", "Requested Actor Operation is not supported : {0}."),
+    fileDataError(422,"Incorrect File Data","Please provide a file with proper data."),
+    uniqueValueError(400, "Unique Value Missing", "Please provide single value of {0}."),
+    invalidTokenCredentials(403, "Forbidden", "Please provide a valid {0}."),
+    internalFileProcessingError(500,"Internal Server Error","Failed to read the file due to some internal error."),
+    databaseCredentialsMissingError(400, "Missing Neo4j Database Credentials", "Unable to get Neo4j database username or password."),
+    databaseUrlMissingError(400,"Missing Neo4j Database Credentials","Unable to get Neo4j database connection url"),
+    databaseAuthenticationError(400, "Neo4j Connection Failed", "Failed to connect to Neo4j database due to incorrect credentials."),
+    fileMissingError(500,"Internal Server Error","Unable to read the {0} file."),
+    unsupportedFileTypeError(400, "Unsupported File Type", "Please provide file of type {0} or {1} "),
+    expiredTokenError(403, "Forbidden", "User Token expired. Please create and provide a new {0}.");
 
 
     private int responseCode;
