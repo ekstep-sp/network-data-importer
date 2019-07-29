@@ -221,8 +221,8 @@ public class DataExportDaoImpl implements DataExportDao {
 
                 StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})-[");
                 query.append("r:`").append(relationDetailEach.get(4).trim()).append("`");
-                query.append("]->(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
-                query.append(" CREATE (a)-[r:`").append(relationDetailEach.get(2).trim()).append("` {");
+                query.append("]-(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
+                query.append(" RETURN r");
                 ProjectLogger.log("Query generated to check if Node Relation already exists : " + query, LoggerEnum.INFO.name());
 
                 result = session.run(query.toString());
@@ -233,8 +233,8 @@ public class DataExportDaoImpl implements DataExportDao {
                     response.addErrorData("Data Already Exists",dataCount+1);
                 } else {
                     query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"}),");
-                    query.append("(b:`").append(relationDetailEach.get(3).trim()).append("` {`").append(header.get(4).trim()).append("`: \"").append(relationDetailEach.get(4).trim()).append("\"})");
-                    query.append(" CREATE (a)-[r:`").append(relationDetailEach.get(2).trim()).append("` {");
+                    query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
+                    query.append(" CREATE (a)-[r:`").append(relationDetailEach.get(4).trim()).append("` {");
                     boolean check = false;
                     for (int i = 5; i < header.size(); i++) {
                         if (!relationDetailEach.get(i).isEmpty()) {
