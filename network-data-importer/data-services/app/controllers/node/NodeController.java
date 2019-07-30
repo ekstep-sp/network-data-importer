@@ -2,11 +2,22 @@ package controllers.node;
 
 import com.google.inject.Inject;
 import controllers.BaseController;
+import controllers.node.validator.NodeRequestValidator;
+import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
+import org.dataexporter.actors.node.NodeManagementActor;
+import org.dataimporter.DataImportManagement;
+import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
+import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.Results;
+
+import java.io.File;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public class NodeController extends BaseController {
@@ -41,6 +52,28 @@ public class NodeController extends BaseController {
             return processNodeRequest(request(), "deleteNode",httpExecutionContext);
     }
 
+    private CompletionStage<Result> processNodeRequest(Http.Request request, String operation, HttpExecutionContext httpExecutionContext) throws ProjectCommonException {
+
+        // To process any Node request generated
+        Request customRequest;
+        try {
+            new NodeRequestValidator().validateNodeRequest(request);
+            Http.MultipartFormData body = request.body().asMultipartFormData();
+            Http.MultipartFormData.FilePart<File> filePart = body.getFile("data");
+            Map<String, Object> nodeData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());
+            customRequest = new Request(operation);
+            customRequest.setRequestPath(request().path());
+            customRequest.setRequestParameter("data", nodeData);
+        }
+        catch (ProjectCommonException e) {
+            ProjectLogger.log("Error while validating node request : ",e, LoggerEnum.ERROR.name());
+            return CompletableFuture.supplyAsync(() -> {
+                        return Results.status(e.getResponseCode(), Json.toJson(e.toMap()));
+                    },
+                    httpExecutionContext.current());
+        }
+        return (handleCustomRequest(customRequest,httpExecutionContext,NodeManagementActor.class.getSimpleName()));
+    }
 
 
 }

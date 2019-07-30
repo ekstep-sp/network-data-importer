@@ -7,6 +7,7 @@ import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
+import org.dataexporter.actors.relation.RelationManagementActor;
 import org.dataimporter.DataImportManagement;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
@@ -53,5 +54,27 @@ public class NodeRelationController extends BaseController {
     }
 
 
+    private CompletionStage<Result> processRelationRequest(Http.Request request, String operation, HttpExecutionContext httpExecutionContext) throws ProjectCommonException {
+
+        // To process any Node Relationship request generated
+        Request customRequest;
+        try {
+            new NodeRelationRequestValidator().validateNodeRelationRequest(request);
+            Http.MultipartFormData body = request.body().asMultipartFormData();
+            Http.MultipartFormData.FilePart<File> filePart = body.getFile("data");
+            Map<String, Object> nodeRelationData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());
+            customRequest = new Request(operation);
+            customRequest.setRequestPath(request().path());
+            customRequest.setRequestParameter("data", nodeRelationData);
+        }
+        catch (ProjectCommonException e) {
+            ProjectLogger.log("Error while validating node relation request : ",e, LoggerEnum.ERROR.name());
+            return CompletableFuture.supplyAsync(() -> {
+                        return Results.status(e.getResponseCode(), Json.toJson(e.toMap()));
+                    },
+                    httpExecutionContext.current());
+        }
+        return (handleCustomRequest(customRequest,httpExecutionContext, RelationManagementActor.class.getSimpleName()));
+    }
 
 }

@@ -3,11 +3,9 @@ package controllers.node.validator;
 
 import org.commons.exception.ProjectCommonException;
 import org.commons.responsecode.ResponseCode;
-import play.mvc.Http.MultipartFormData;
 import play.mvc.Http;
 import play.mvc.Http.Request;
 
-import java.io.File;
 
 public class NodeRequestValidator {
 
@@ -19,17 +17,6 @@ public class NodeRequestValidator {
             throw new ProjectCommonException(ResponseCode.mandatoryParameterMissing,"data");
         if(body.getFiles().size()>1)
             throw new ProjectCommonException(ResponseCode.multipleFilesFoundException,"data");
-
-//        String[] data = (String[]) body.asFormUrlEncoded().get("label");
-//        if(data==null || data.length==0)
-//            throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide parameter 'label' ");
-//
-//        if(data.length>1)
-//            throw new ProjectCommonException(400,"Unique Value Missing","Please provide single value of 'label' ");
-//
-//        if(data[0]==null || data[0].isEmpty())
-//                throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide a value in the parameter 'label' ");
-
     }
 
 }

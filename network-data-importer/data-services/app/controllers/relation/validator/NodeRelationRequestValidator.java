@@ -14,27 +14,5 @@ public class NodeRelationRequestValidator {
         if(body.getFiles().size()>1)
             throw new ProjectCommonException(ResponseCode.multipleFilesFoundException,"data");
 
-
-//        String[] data = (String[]) body.asFormUrlEncoded().get("source-label");
-//        if(data==null || data.length==0)
-//            throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide parameter 'source-label' ");
-//
-//        if(data.length>1)
-//            throw new ProjectCommonException(400,"Unique Value Missing","Please provide single value of 'source-label' ");
-//
-//        if(data[0]==null || data[0].isEmpty())
-//            throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide a value in the parameter 'source-label' ");
-//
-//
-//        data = (String[]) body.asFormUrlEncoded().get("target-label");
-//        if(data==null || data.length==0)
-//            throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide parameter 'target-label' ");
-//
-//        if(data.length>1)
-//            throw new ProjectCommonException(400,"Unique Value Missing","Please provide single value of 'target-label' ");
-//
-//        if(data[0]==null || data[0].isEmpty())
-//            throw new ProjectCommonException(400,"Mandatory Parameter Missing","Please provide a value in the parameter 'target-label' ");
-
     }
 }

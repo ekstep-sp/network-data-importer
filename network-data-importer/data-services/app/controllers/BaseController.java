@@ -4,27 +4,20 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
-import controllers.node.validator.NodeRequestValidator;
-import controllers.relation.validator.NodeRelationRequestValidator;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
 import org.commons.response.Response;
 import org.commons.responsecode.ResponseCode;
-import org.dataexporter.DataExportManagement;
-import org.dataimporter.DataImportManagement;
+import org.dataexporter.actors.RequestRouter;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
-import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 import scala.compat.java8.FutureConverters;
-
-import java.io.File;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
@@ -33,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 public class BaseController extends Controller {
 
 private static ActorSystem system;
-private static ActorRef actorRef;
 private  static Timeout timeout;
+private static ActorRef actorRef;
 //    private HttpExecutionContext httpExecutionContext;
 
 
@@ -43,7 +36,8 @@ static {
     ProjectLogger.log("Creating Actor System in BaseController", LoggerEnum.INFO.name());
     system = ActorSystem.create("data-exporter");
     timeout = Timeout.apply(2, TimeUnit.MINUTES);
-    actorRef = system.actorOf(DataExportManagement.props(), "export-management");
+    actorRef = system.actorOf(RequestRouter.props(), RequestRouter.class.getSimpleName());
+
 }
 
 public BaseController() {
@@ -56,65 +50,14 @@ public BaseController() {
 //    }
 
 
-    protected CompletionStage<Result> processNodeRequest(Http.Request request, String operation, HttpExecutionContext httpExecutionContext) throws ProjectCommonException {
-
-    // To process any Node request generated
-    Request customRequest;
-    try {
-        new NodeRequestValidator().validateNodeRequest(request);
-        Http.MultipartFormData body = request.body().asMultipartFormData();
-        Http.MultipartFormData.FilePart<File> filePart = body.getFile("data");
-        Map<String, Object> nodeData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());
-
-//        String label = ((String[]) body.asFormUrlEncoded().get("label"))[0];
-        customRequest = new Request(operation);
-        customRequest.setRequestPath(request().path());
-//        customRequest.setRequestParameter("nodeSourceLabel", label.trim());
-        customRequest.setRequestParameter("data", nodeData);
-    }
-    catch (ProjectCommonException e) {
-            ProjectLogger.log("Error while validating node request : ",e, LoggerEnum.ERROR.name());
-            return CompletableFuture.supplyAsync(() -> {
-                        return Results.status(e.getResponseCode(), Json.toJson(e.toMap()));
-                    },
-                    httpExecutionContext.current());
-        }
-        return (handleCustomRequest(customRequest,httpExecutionContext));
-    }
-
-    protected CompletionStage<Result> processRelationRequest(Http.Request request, String operation, HttpExecutionContext httpExecutionContext) throws ProjectCommonException {
-
-        // To process any Node Relationship request generated
-        Request customRequest;
-        try {
-        new NodeRelationRequestValidator().validateNodeRelationRequest(request);
-        Http.MultipartFormData body = request.body().asMultipartFormData();
-        Http.MultipartFormData.FilePart<File> filePart = body.getFile("data");
-        Map<String, Object> nodeRelationData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());
-
-//        String sourceNodeLabel = ((String[]) body.asFormUrlEncoded().get("source-label"))[0];
-//        String targetNodeLabel = ((String[]) body.asFormUrlEncoded().get("target-label"))[0];
-
-        customRequest = new Request(operation);
-        customRequest.setRequestPath(request().path());
-
-//        customRequest.setRequestParameter("nodeSourceLabel", sourceNodeLabel.trim());
-//        customRequest.setRequestParameter("nodeTargetLabel", targetNodeLabel.trim());
-        customRequest.setRequestParameter("data", nodeRelationData);
-        }
-        catch (ProjectCommonException e) {
-            ProjectLogger.log("Error while validating node relation request : ",e, LoggerEnum.ERROR.name());
-            return CompletableFuture.supplyAsync(() -> {
-                        return Results.status(e.getResponseCode(), Json.toJson(e.toMap()));
-                    },
-                    httpExecutionContext.current());
-        }
-        return (handleCustomRequest(customRequest,httpExecutionContext));
-    }
 
 
-    private CompletionStage<Result> handleCustomRequest(Request request,HttpExecutionContext httpExecutionContext) {
+
+
+    protected CompletionStage<Result> handleCustomRequest(Request request,HttpExecutionContext httpExecutionContext,String className) {
     // To handle the custom request generated after reading the file from the request by using the Actor Model System of Data-Exporter
+
+        request.setActorClassName(className);
 
         return FutureConverters.toJava(
                 Patterns.ask(actorRef, request, timeout))

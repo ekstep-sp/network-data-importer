@@ -28,10 +28,11 @@ public class RequestInterceptor implements play.http.ActionCreator {
                 Http.Request request = ctx.request();
                 if(!request.path().equals("/v1/auth/create")) {
                     try {
-                        if (request.getHeader("user-token") == null || request.getHeader("user-token").isEmpty()) {
+                        String userToken = request.getHeader("user-token");
+                        if (userToken == null || userToken.isEmpty()) {
                             throw new ProjectCommonException(ResponseCode.unAuthorized);
                         } else {
-                            new JwtAuthentication().verifyUserToken(request.getHeader("user-token"));
+                            new JwtAuthentication().verifyUserToken(userToken);
                         }
                     } catch (ProjectCommonException exc) {
                         return CompletableFuture.supplyAsync(() -> {

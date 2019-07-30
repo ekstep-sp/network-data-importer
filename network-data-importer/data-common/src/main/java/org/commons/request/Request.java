@@ -13,6 +13,7 @@ public class Request implements Serializable {
     private String ts;
     private String requestPath;
     private Map<String,Object> request;
+    private String actorClassName;
 
     public Request() {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -65,4 +66,11 @@ public class Request implements Serializable {
         return map;
     }
 
+    public String getActorClassName() {
+        return actorClassName;
+    }
+
+    public void setActorClassName(String actorClassName) {
+        this.actorClassName = actorClassName;
+    }
 }
