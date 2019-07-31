@@ -2,6 +2,7 @@ package org.commons.exception;
 
 
 import org.commons.responsecode.ResponseCode;
+import org.commons.util.Constants;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -35,11 +36,11 @@ public class ProjectCommonException extends RuntimeException
     }
 
 
-    public ProjectCommonException(ResponseCode rsc, String... args)
+    public ProjectCommonException(ResponseCode rsc, String... arguments)
     {
         this.responseCode = rsc.getResponseCode();
         this.code = rsc.getErrorCode();
-        this.message = MessageFormat.format(rsc.getErrorMessage(),args);
+        this.message = MessageFormat.format(rsc.getErrorMessage(),arguments);
     }
 
     public String getCode() {
@@ -78,15 +79,15 @@ public class ProjectCommonException extends RuntimeException
         Map<String,Object> response = new HashMap<>();
         Map<String,Object> errorDetails = new HashMap<>();
 
-        errorDetails.put("Status",responseCode);
-        errorDetails.put("Error Code",code.toUpperCase());
-        errorDetails.put("Error Message",message);
+        errorDetails.put(Constants.STATUS,responseCode);
+        errorDetails.put(Constants.ERROR_CODE,code.toUpperCase());
+        errorDetails.put(Constants.ERROR_MESSAGE,message);
 
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        SimpleDateFormat formatter = new SimpleDateFormat(Constants.DATE_TIME_FORMAT);
         Date date = new Date();
 
-        response.put("Time Stamp",formatter.format(date));
-        response.put("Error Details",errorDetails);
+        response.put(Constants.TIME_STAMP,formatter.format(date));
+        response.put(Constants.ERROR_DETAILS,errorDetails);
 
         return response;
     }

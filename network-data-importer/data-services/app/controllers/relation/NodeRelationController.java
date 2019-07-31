@@ -7,6 +7,8 @@ import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
+import org.commons.util.ActorOperation;
+import org.commons.util.Constants;
 import org.dataexporter.actors.relation.RelationManagementActor;
 import org.dataimporter.DataImportManagement;
 import play.libs.Json;
@@ -38,19 +40,19 @@ public class NodeRelationController extends BaseController {
     public CompletionStage<Result> createNodeRelation() {
 
         ProjectLogger.log("Create Node Relation Api called", LoggerEnum.DEBUG.name());
-            return processRelationRequest(request(), "createRelation",httpExecutionContext);
+            return processRelationRequest(request(), ActorOperation.CREATE_RELATION.getValue(),httpExecutionContext);
     }
 
     public CompletionStage<Result> updateNodeRelation() {
 
         ProjectLogger.log("Update Node Relation Api called", LoggerEnum.DEBUG.name());
-            return processRelationRequest(request(), "updateRelation",httpExecutionContext);
+            return processRelationRequest(request(), ActorOperation.UPDATE_RELATION.getValue(),httpExecutionContext);
     }
 
     public CompletionStage<Result> deleteNodeRelation() {
 
         ProjectLogger.log("Delete Node Relation Api called", LoggerEnum.DEBUG.name());
-            return processRelationRequest(request(), "deleteRelation",httpExecutionContext);
+            return processRelationRequest(request(), ActorOperation.DELETE_RELATION.getValue(),httpExecutionContext);
     }
 
 
@@ -61,7 +63,7 @@ public class NodeRelationController extends BaseController {
         try {
             new NodeRelationRequestValidator().validateNodeRelationRequest(request);
             Http.MultipartFormData body = request.body().asMultipartFormData();
-            Http.MultipartFormData.FilePart<File> filePart = body.getFile("data");
+            Http.MultipartFormData.FilePart<File> filePart = body.getFile(Constants.DATA);
             Map<String, Object> nodeRelationData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());
             customRequest = new Request(operation);
             customRequest.setRequestPath(request().path());

@@ -8,7 +8,7 @@ public enum LoggerEnum {
     ERROR,
     FATAL;
 
-    private LoggerEnum() {
+    LoggerEnum() {
     }
 }
 

@@ -15,7 +15,6 @@ public enum ResponseCode {
     uniqueValueError(400, "Unique Value Missing", "Please provide single value of {0}."),
     invalidTokenCredentials(403, "Forbidden", "Please provide a valid {0}."),
     internalFileProcessingError(500,"Internal Server Error","Failed to read the file due to some internal error."),
-    databaseCredentialsMissingError(400, "Missing Neo4j Database Credentials", "Unable to get Neo4j database username or password."),
     databaseUrlMissingError(400,"Missing Neo4j Database Credentials","Unable to get Neo4j database connection url"),
     databaseAuthenticationError(400, "Neo4j Connection Failed", "Failed to connect to Neo4j database due to incorrect credentials."),
     fileMissingError(500,"Internal Server Error","Unable to read the {0} file."),

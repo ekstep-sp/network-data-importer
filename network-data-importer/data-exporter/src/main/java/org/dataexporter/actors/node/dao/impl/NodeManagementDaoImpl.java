@@ -6,45 +6,26 @@ import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
-import org.commons.responsecode.ResponseCode;
 import org.dataexporter.actors.node.dao.NodeManagementDao;
 import org.neo4j.driver.internal.value.NodeValue;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.*;
 
 import java.util.*;
+//import java.util.concurrent.CompletableFuture;
+//import java.util.concurrent.CompletionStage;
 
 public class NodeManagementDaoImpl implements NodeManagementDao {
 
-    private Session session;
     private List<String> header;
     private StatementResult result;
     private List<List<String>> dataList;
 
-    public NodeManagementDaoImpl(){
-
-        try {
-            session = Neo4jConnectionManager.getSession();
-            if(session ==null || !session.isOpen())
-            {
-                ProjectLogger.log("Error, session could not be instantiated in neo4j", LoggerEnum.ERROR.name());
-                throw new ProjectCommonException(ResponseCode.databaseSessionCreationError);
-            }
-        }
-        catch (ProjectCommonException e)
-        {
-            throw e;
-        }
-        catch (Exception | Error e)
-        {
-            ProjectLogger.log("Error in database while creating session", LoggerEnum.ERROR.name());
-            throw new ProjectCommonException(ResponseCode.databaseConnectionError);
-        }
+    public NodeManagementDaoImpl() {
     }
 
+
     @Override
-    public Response createNode(Map<String,Object> nodeData) {
+    public Response createNode(Map<String,Object> nodeData) throws ProjectCommonException {
 
         // To create a Node
         Response response= new Response();
@@ -52,6 +33,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
         int dataCount=0;
         header = (List<String>) nodeData.get("header");
         dataList = (List<List<String>>) nodeData.get("data");
+
+        Session session = Neo4jConnectionManager.getSession();
 
         for(List<String> nodeDetailsEach : dataList) {
 
@@ -63,23 +46,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
             }
             try {
 
-                StringBuilder query = new StringBuilder("MATCH (a:`" + nodeDetailsEach.get(0).trim() + "` { `");
-                query.append(header.get(1).trim()).append("`: \"").append(nodeDetailsEach.get(1).trim()).append("\"");
-                query.append("}) RETURN a");
-                ProjectLogger.log("Query generated to check if Node already exists : " + query, LoggerEnum.INFO.name());
-
-                result = session.run(query.toString());
-                if (result.hasNext()) {
-                    // Check if Node already Exists
-                    List<Record> recordList = result.list();
-                    int nodeCount = recordList.size();
-                    ProjectLogger.log("Node already exists : "+(recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
-                    response.addErrorData("Data Already Exists",dataCount+1);
-                }
-                else {
-
                     //Creating a Node
-                    query = new StringBuilder("CREATE (a:`" + nodeDetailsEach.get(0).trim() + "` { ");
+                    StringBuilder query = new StringBuilder("MERGE (a:`" + nodeDetailsEach.get(0).trim() + "` { ");
 
                     boolean check = false;
                     for (int i = 1; i < header.size(); i++) {
@@ -97,7 +65,31 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                     query.append("}) RETURN a");
 
                     ProjectLogger.log("Query generated to Create Node : " + query, LoggerEnum.INFO.name());
+
+
+
+//                    final String query2 = query.toString();
+
+//                CompletionStage<List<Record>> runAsync = session.writeTransactionAsync(tx -> tx.runAsync(query2))
+//                        .thenComposeAsync( cursor -> cursor.listAsync() );
+//                CompletionStage<Record> newResult = runAsync.thenApplyAsync(list -> list.get(0));
+//
+//                Record record = newResult.toCompletableFuture().get();
+//                    NodeValue node = (NodeValue) record.get(0);
+//                    ProjectLogger.log("Node created Successfully : "+node.asMap(), LoggerEnum.INFO.name());
+
+
+//                session.writeTransactionAsync(tx -> tx.runAsync(query2))
+//                        .thenComposeAsync( cursor -> cursor.listAsync() )
+//                        .whenComplete((list,error) -> {
+//                            Record record = list.get(0);
+//                            NodeValue node = (NodeValue) record.get(0);
+//                            ProjectLogger.log("Node created Successfully : "+node.asMap(), LoggerEnum.INFO.name());
+//                            response.addSuccess();
+//                        });
+
                     result = session.run(query.toString());
+
                     if (result.hasNext()) {
                         Record record = result.next();
                         NodeValue node = (NodeValue) record.get(0);
@@ -105,20 +97,39 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                     }
 
                     response.addSuccess();
-                }
             }
             catch (Error | Exception e) {
                 ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
                 response.addErrorData("Error in data",dataCount+1);
             }
         }
-        session.close();
         return response;
     }
 
 
+
+//    @Override
+//    public void createNode(String query) {
+//
+//        // To create a Node
+//        ProjectLogger.log("Create Node called in NodeManagementDaoImpl", LoggerEnum.DEBUG.name());
+//
+//        StatementResult result = null;
+//            try (Session session = getSession()) {
+//
+//                result = session.run(query);
+//
+//            }
+//            catch (Error | Exception e) {
+//                ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
+////                response.addErrorData("Error in data",dataCount+1);
+//            }
+////        return result;
+//    }
+
+
     @Override
-    public Response updateNode(Map<String,Object> nodeData) throws Exception{
+    public Response updateNode(Map<String,Object> nodeData) throws ProjectCommonException {
 
         // Update a Node
         Response response= new Response();
@@ -128,6 +139,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
         header = (List<String>) nodeData.get("header");
         dataList = (List<List<String>>) nodeData.get("data");
 
+        Session session = Neo4jConnectionManager.getSession();
         Record record;
         for(List<String> nodeDetailsEach : dataList) {
 
@@ -194,16 +206,80 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 response.addErrorData("Error in data",dataCount+1);
             }
         }
-        session.close();
         return response;
     }
 
 
 
     @Override
-    public Response deleteNode(Map<String,Object> nodeData) throws Exception {
+    public Response deleteNode(Map<String,Object> nodeData) throws ProjectCommonException {
 
-        return null;
+        // Update a Node
+        Response response = new Response();
+        response.setOperation("Delete Node");
+        int dataCount = 0;
+
+        header = (List<String>) nodeData.get("header");
+        dataList = (List<List<String>>) nodeData.get("data");
+
+        Record record;
+        Session session = Neo4jConnectionManager.getSession();
+            for (List<String> nodeDetailsEach : dataList) {
+
+            dataCount++;
+
+            try {
+
+                boolean check = false;
+                StringBuilder query = new StringBuilder("MATCH (a:`" + nodeDetailsEach.get(0).trim() + "` { ");
+                for (int i = 1; i < header.size(); i++) {
+                    if (!nodeDetailsEach.get(i).isEmpty()) {
+                        query.append("`").append(header.get(i).trim());
+                        query.append("`:\"").append(nodeDetailsEach.get(i).trim()).append("\"");
+                        query.append(",");
+                        check = true;
+                    }
+                }
+                int lastCommaIndex = query.toString().lastIndexOf(',');
+                if (lastCommaIndex > 0 && check) {
+                    query = new StringBuilder(query.substring(0, lastCommaIndex) + query.substring(lastCommaIndex + 1));
+                }
+                query.append(" })");
+
+
+                result = session.run(query.toString() + " RETURN a");
+                if (result.hasNext()) {
+                    // Check if the Node Exists
+                    List<Record> recordList = result.list();
+                    int nodeCount = recordList.size();
+
+                    if (nodeCount > 1) {
+                        // update the Node
+                        ProjectLogger.log("Duplicate Data Present : " + (recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
+                        response.addErrorData("Duplicate Data Present", dataCount + 1);
+                    } else {
+                        query.append(" DETACH DELETE a");
+                        ProjectLogger.log("Query generated to DELETE Node : " + query, LoggerEnum.INFO.name());
+                        result = session.run(query.toString());
+                        if (result.hasNext()) {
+                            record = result.next();
+                            ProjectLogger.log("Node deleted successfully : " + record.asMap(), LoggerEnum.INFO.name());
+                        }
+
+                        response.addSuccess();
+                    }
+                } else {
+                    ProjectLogger.log("No Such Data Present", LoggerEnum.WARN.name());
+                    response.addErrorData("No Such Data Present", dataCount + 1);
+                }
+
+            } catch (Error | Exception e) {
+                ProjectLogger.log("Error in Data", e, LoggerEnum.ERROR.name());
+                response.addErrorData("Error in data", dataCount + 1);
+            }
+        }
+
+        return response;
     }
 
 

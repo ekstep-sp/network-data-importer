@@ -8,6 +8,8 @@ import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.responsecode.ResponseCode;
+import org.commons.util.Constants;
+import org.commons.util.PropertiesCache;
 //import io.jsonwebtoken.impl.Base64Codec;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -15,19 +17,11 @@ import javax.xml.bind.DatatypeConverter;
 
 public class JwtAuthentication {
 
-    private long expirationTime = 1000 * 60 * 60 * 24 * 1; // 1 days
-//  secret Key encoded to BASE64 "TVRJek5EVTJOemc9"
-    private String secretKey = "MTIzNDU2Nzg=";
-    private String issuer = "NIIT";
-    private String subject = "network-visualizer";
+    private PropertiesCache propertiesCache = PropertiesCache.getInstance();
+    //  secret Key encoded to BASE64 "TVRJek5EVTJOemc9"
     private SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS512;
 
-//    public void testJWT() {
-//        String token = generateJwtToken();
-//        System.out.println(token);
-//        printStructure(token);
-////        printBody(token);
-//    }
+
 
     public String createUserToken(String issuer, String subject) {
 
@@ -36,15 +30,16 @@ public class JwtAuthentication {
 
 
 
-        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(secretKey);
+        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(propertiesCache.getProperty("jwt_secret_key"));
         Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
 
         long time = System.currentTimeMillis();
+        long expirationTime = Long.parseLong(propertiesCache.getProperty("jwt_expiration_time"));
         JwtBuilder builder = Jwts.builder().setSubject("adam")
                 .setSubject(subject)
                 .setIssuer(issuer)
                 .setIssuedAt(new Date(time))
-                .setExpiration(new Date(time+expirationTime))
+                .setExpiration(new Date(time+(expirationTime*1000)))
                 .signWith(signatureAlgorithm, signingKey);
 
         return builder.compact();
@@ -68,13 +63,13 @@ public class JwtAuthentication {
 
         try {
             try {
-                Claims body = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-                if (!body.getIssuer().equals(issuer) || !body.getSubject().equals(subject))
-                    throw new ProjectCommonException(ResponseCode.invalidTokenCredentials,"user-token");
+                Claims body = Jwts.parser().setSigningKey(propertiesCache.getProperty("jwt_secret_key")).parseClaimsJws(token).getBody();
+                if (!body.getIssuer().equals(propertiesCache.getProperty("jwt_issuer")) || !body.getSubject().equals(propertiesCache.getProperty("jwt_subject")))
+                    throw new ProjectCommonException(ResponseCode.invalidTokenCredentials,Constants.USER_TOKEN);
             } catch (ExpiredJwtException e) {
-                throw new ProjectCommonException(ResponseCode.expiredTokenError,"user-token");
+                throw new ProjectCommonException(ResponseCode.expiredTokenError,Constants.USER_TOKEN);
             } catch (MalformedJwtException | UnsupportedJwtException | SignatureException e) {
-                throw new ProjectCommonException(ResponseCode.invalidTokenCredentials,"user-token");
+                throw new ProjectCommonException(ResponseCode.invalidTokenCredentials,Constants.USER_TOKEN);
             } catch (Exception e) {
                 throw new ProjectCommonException(ResponseCode.unAuthorized);
             }

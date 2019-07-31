@@ -7,6 +7,8 @@ import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
+import org.commons.util.ActorOperation;
+import org.commons.util.Constants;
 import org.dataexporter.actors.node.NodeManagementActor;
 import org.dataimporter.DataImportManagement;
 import play.libs.Json;
@@ -37,19 +39,19 @@ public class NodeController extends BaseController {
 
     public CompletionStage<Result> createNode() {
         ProjectLogger.log("Create Node Api called", LoggerEnum.DEBUG.name());
-            return processNodeRequest(request(), "createNode",httpExecutionContext);
+            return processNodeRequest(request(), ActorOperation.CREATE_NODE.getValue(),httpExecutionContext);
     }
 
     public CompletionStage<Result> updateNode() {
 
         ProjectLogger.log("Update Node Api called", LoggerEnum.DEBUG.name());
-        return processNodeRequest(request(), "updateNode", httpExecutionContext);
+        return processNodeRequest(request(), ActorOperation.UPDATE_NODE.getValue(), httpExecutionContext);
     }
 
     public CompletionStage<Result> deleteNode() {
 
         ProjectLogger.log("Delete Node Api called", LoggerEnum.DEBUG.name());
-            return processNodeRequest(request(), "deleteNode",httpExecutionContext);
+            return processNodeRequest(request(), ActorOperation.DELETE_NODE.getValue(),httpExecutionContext);
     }
 
     private CompletionStage<Result> processNodeRequest(Http.Request request, String operation, HttpExecutionContext httpExecutionContext) throws ProjectCommonException {
@@ -59,7 +61,7 @@ public class NodeController extends BaseController {
         try {
             new NodeRequestValidator().validateNodeRequest(request);
             Http.MultipartFormData body = request.body().asMultipartFormData();
-            Http.MultipartFormData.FilePart<File> filePart = body.getFile("data");
+            Http.MultipartFormData.FilePart<File> filePart = body.getFile(Constants.DATA);
             Map<String, Object> nodeData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());
             customRequest = new Request(operation);
             customRequest.setRequestPath(request().path());

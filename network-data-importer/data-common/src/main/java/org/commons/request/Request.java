@@ -1,5 +1,7 @@
 package org.commons.request;
 
+import org.commons.util.Constants;
+
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,7 +18,7 @@ public class Request implements Serializable {
     private String actorClassName;
 
     public Request() {
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        SimpleDateFormat formatter = new SimpleDateFormat(Constants.DATE_TIME_FORMAT);
         Date date = new Date();
         ts = formatter.format(date);
         request = new HashMap<>();
@@ -58,10 +60,10 @@ public class Request implements Serializable {
 
     public Map<String, Object> requestToMap() {
         Map<String, Object> map = new HashMap<>();
-        map.put("Operation",operation);
-        map.put("Time Stamp",ts);
-        map.put("Requested Path",requestPath);
-        map.put("Request Body",request);
+        map.put(Constants.OPERATION,operation);
+        map.put(Constants.TIME_STAMP,ts);
+        map.put(Constants.REQUEST_PATH,requestPath);
+        map.put(Constants.REQUEST_BODY,request);
 
         return map;
     }

@@ -1,11 +1,11 @@
 package controllers.auth;
 
-import controllers.BaseController;
 import controllers.auth.validator.AuthenticationRequestValidator;
 import org.commons.auth.JwtAuthentication;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
+import org.commons.util.Constants;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -28,11 +28,11 @@ public class AuthenticationController extends Controller {
         try {
             new AuthenticationRequestValidator().validateCreateUserTokenRequest(request);
 
-//            Map<String,String[]> body = request.body().asFormUrlEncoded();
-//            String issuer = body.get("issuer")[0];
-//            String subject = body.get("issuer")[0];
-//            token = new JwtAuthentication().createUserToken(issuer,subject);
-            token = new JwtAuthentication().createUserToken("NIIT","network-visualizer");
+            Map<String,String[]> body = request.body().asFormUrlEncoded();
+            String issuer = body.get(Constants.ISSUER)[0];
+            String subject = body.get(Constants.SUBJECT)[0];
+            token = new JwtAuthentication().createUserToken(issuer,subject);
+//            token = new JwtAuthentication().createUserToken("NIIT","network-visualizer");
         }
         catch (ProjectCommonException e) {
             return Results.status(e.getResponseCode(), Json.toJson(e.toMap()));

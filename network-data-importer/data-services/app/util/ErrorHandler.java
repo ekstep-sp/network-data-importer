@@ -4,6 +4,7 @@ import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.responsecode.ResponseCode;
+import org.commons.util.Constants;
 import play.http.HttpErrorHandler;
 import play.libs.Json;
 import play.mvc.*;
@@ -21,7 +22,7 @@ public class ErrorHandler implements HttpErrorHandler {
 
         ProjectLogger.log("Global: onClientError called for path = " + request.path(), LoggerEnum.ERROR.name());
         if(statusCode == 404)
-            message = "Api Not Found";
+            message = Constants.API_NOT_FOUND;
         ProjectCommonException commonException = new ProjectCommonException(statusCode, "Client Error", message);
         ProjectLogger.log("Client Error", commonException, LoggerEnum.ERROR.name());
 
@@ -33,7 +34,7 @@ public class ErrorHandler implements HttpErrorHandler {
         // To handle all Server errors in the project
 
         ProjectLogger.log("Global: onServerError called for path = " + request.path(), LoggerEnum.INFO.name());
-        ProjectCommonException commonException = null;
+        ProjectCommonException commonException;
         if (exception instanceof ProjectCommonException) {
             ProjectLogger.log("Global:onServerError: ProjectCommonException occurred for path = " + request.path(), LoggerEnum.ERROR.name());
             commonException = (ProjectCommonException) exception;

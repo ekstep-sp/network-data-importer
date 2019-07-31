@@ -17,35 +17,17 @@ import java.util.*;
 
 public class RelationManagementDaoImpl implements RelationManagementDao {
 
-    private Session session;
     private List<String> header;
     private StatementResult result;
     private List<List<String>> dataList;
 
-    public RelationManagementDaoImpl(){
+    public RelationManagementDaoImpl() {
 
-        try {
-            session = Neo4jConnectionManager.getSession();
-            if(session ==null || !session.isOpen())
-            {
-                ProjectLogger.log("Error, session could not be instantiated in neo4j", LoggerEnum.ERROR.name());
-                throw new ProjectCommonException(ResponseCode.databaseSessionCreationError);
-            }
-        }
-        catch (ProjectCommonException e)
-        {
-            throw e;
-        }
-        catch (Exception | Error e)
-        {
-            ProjectLogger.log("Error in database while creating session", LoggerEnum.ERROR.name());
-            throw new ProjectCommonException(ResponseCode.databaseConnectionError);
-        }
     }
 
 
     @Override
-    public Response createNodeRelation(Map<String,Object> relationData) throws Exception
+    public Response createNodeRelation(Map<String,Object> relationData) throws ProjectCommonException
     {
 
         // Create Node Relationship
@@ -55,6 +37,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
 
         header = (List<String>) relationData.get("header");
         dataList = (List<List<String>>) relationData.get("data");
+        Session session = Neo4jConnectionManager.getSession();
 
         for(List<String> relationDetailEach : dataList) {
 
@@ -117,7 +100,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
     }
 
     @Override
-    public Response updateNodeRelation(Map<String,Object> relationData) throws Exception{
+    public Response updateNodeRelation(Map<String,Object> relationData) throws ProjectCommonException{
 
         // To update Node Relationships
         Response response= new Response();
@@ -127,6 +110,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
         header = (List<String>) relationData.get("header");
         dataList = (List<List<String>>) relationData.get("data");
         Record record;
+        Session session = Neo4jConnectionManager.getSession();
 
         for(List<String> relationDetailEach : dataList) {
 
@@ -155,7 +139,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                         boolean check = false;
                         query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})");
                         query.append("-[r: `").append(relationDetailEach.get(4).trim()).append("`]-");
-                        query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(4).trim()).append("`: \"").append(relationDetailEach.get(4).trim()).append("\"})");
+                        query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
                         query.append(" SET ");
                         for (int i = 5; i < header.size(); i++) {
                             if (!relationDetailEach.get(i).isEmpty()) {
@@ -198,9 +182,80 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
     }
 
     @Override
-    public Response deleteNodeRelation(Map<String,Object> relationData) throws Exception {
+    public Response deleteNodeRelation(Map<String,Object> relationData) throws ProjectCommonException {
 
-        return null;
+        // To update Node Relationships
+        Response response= new Response();
+        response.setOperation("Update Node Relation");
+        int dataCount=0;
+
+        header = (List<String>) relationData.get("header");
+        dataList = (List<List<String>>) relationData.get("data");
+        Record record;
+        Session session = Neo4jConnectionManager.getSession();
+
+        for(List<String> relationDetailEach : dataList) {
+
+            dataCount++;
+
+            try {
+
+                boolean check = false;
+                StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})");
+                query.append("-[r: `").append(relationDetailEach.get(4).trim()).append("` {");
+                for (int i = 5; i < header.size(); i++) {
+                    if (!relationDetailEach.get(i).isEmpty()) {
+                        query.append("`").append(header.get(i).trim());
+                        query.append("`:\"").append(relationDetailEach.get(i).trim()).append("\"");
+                        query.append(",");
+                        check = true;
+                    }
+                }
+                int lastCommaIndex = query.toString().lastIndexOf(',');
+                if (lastCommaIndex > 0 && check) {
+                    query = new StringBuilder(query.substring(0, lastCommaIndex) + query.substring(lastCommaIndex + 1));
+                }
+                query.append("}]-");
+                query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
+
+                result = session.run(query.toString()+" RETURN r");
+                if(result.hasNext()) {
+                    // Check if the relationship exists between Nodes
+                    List<Record> recordList = result.list();
+                    int relationCount = recordList.size();
+                    if(relationCount > 1)
+                    {
+                        ProjectLogger.log("Duplicate Data Present : "+(recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
+                        response.addErrorData("Duplicate Data Present",dataCount+1);
+                    }
+                    else {
+                        // Deleting relationship between Node
+
+                        query.append(" DELETE r");
+
+                        ProjectLogger.log("Query generated to DELETE Node Relation : "+query, LoggerEnum.INFO.name());
+                        result = session.run(query.toString());
+                        if (result.hasNext()) {
+                            record = result.next();
+                            ProjectLogger.log("Node Relation deleted successfully : " + record.asMap(), LoggerEnum.INFO.name());
+                        }
+
+                        response.addSuccess();
+                    }
+                }
+                else {
+                    ProjectLogger.log("No Such Data Present", LoggerEnum.WARN.name());
+                    response.addErrorData("No Such Data Present",dataCount+1);
+                }
+
+            }
+            catch (Error |Exception e) {
+                ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
+                response.addErrorData("Error in data",dataCount+1);
+            }
+        }
+        session.close();
+        return response;
     }
 
 

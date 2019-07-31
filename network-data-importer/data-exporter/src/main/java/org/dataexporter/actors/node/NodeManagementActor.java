@@ -11,7 +11,15 @@ import org.commons.response.Response;
 import org.commons.responsecode.ResponseCode;
 import org.dataexporter.actors.node.dao.NodeManagementDao;
 import org.dataexporter.actors.node.dao.impl.NodeManagementDaoImpl;
+import org.neo4j.driver.internal.value.NodeValue;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
+
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 
 
 public class NodeManagementActor extends AbstractActor {
@@ -26,15 +34,19 @@ public class NodeManagementActor extends AbstractActor {
 
 
     public NodeManagementActor() {
-
         receive(ReceiveBuilder
                 .match(Request.class, request -> {
                     nodeManagementDao = new NodeManagementDaoImpl();
                     String operation = request.getOperation();
+                    ProjectLogger.log("Inside NodeManagementActor Receive", LoggerEnum.DEBUG.name());
+
+//                  Method method = this.getClass().getMethod(operation,Request.class);
+//                  method.invoke(null,request);
                     switch (operation) {
-                        case "createNode":
+                        case "createNode": {
                             createNode(request);
                             break;
+                        }
                         case "updateNode":
                             updateNode(request);
                             break;
@@ -49,12 +61,12 @@ public class NodeManagementActor extends AbstractActor {
     }
 
 
-    private void createNode(Request request) {
+        private void createNode(Request request) {
 
         ProjectLogger.log("Create Node method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
-//            Response response = dataExportDao.createNode((String) requestMap.get("nodeSourceLabel"), (Map<String, Object>) requestMap.get("data"));
+
             Response response = nodeManagementDao.createNode((Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
         }
@@ -67,6 +79,11 @@ public class NodeManagementActor extends AbstractActor {
             sender().tell(e,self());
         }
     }
+
+
+
+
+
 
     private void updateNode(Request request) {
 

@@ -1,5 +1,7 @@
 package org.commons.response;
 
+import org.commons.util.Constants;
+
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -20,11 +22,11 @@ public class Response implements Serializable {
 
     public void addErrorData(String name, int errorLine) {
         if(errorData.get(name)!=null) {
-            errorData.get(name).add("Data Line Number : "+errorLine);
+            errorData.get(name).add(Constants.DATA_LINE_NUMBER+" : "+errorLine);
         }
         else {
             List<String> list = new ArrayList<>();
-            list.add("Data Line Number : "+errorLine);
+            list.add(Constants.DATA_LINE_NUMBER+" : "+errorLine);
             errorData.put(name, list);
         }
     }
@@ -49,21 +51,21 @@ public class Response implements Serializable {
 
 
     public Map<String, Object> getResponse() {
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        SimpleDateFormat formatter = new SimpleDateFormat(Constants.DATE_TIME_FORMAT);
         Date date = new Date();
         Map<String,Object> responseMap = new HashMap<>();
-        responseMap.put("Time Stamp",formatter.format(date));
-        responseMap.put("Success Count",successCount);
+        responseMap.put(Constants.TIME_STAMP,formatter.format(date));
+        responseMap.put(Constants.SUCCESS_COUNT,successCount);
 
         if(errorData.size()>0)
         {
-            responseMap.put(operation, "Partial Success");
-            responseMap.put("Error Details",errorData);
+            responseMap.put(operation, Constants.PARTIAL_SUCCESS);
+            responseMap.put(Constants.ERROR_DETAILS,errorData);
 
         }
         else
         {
-            responseMap.put(operation, "Success");
+            responseMap.put(operation,Constants.SUCCESS);
 
         }
         return responseMap;

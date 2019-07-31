@@ -10,6 +10,7 @@ import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
 import org.commons.response.Response;
 import org.commons.responsecode.ResponseCode;
+import org.commons.util.Constants;
 import org.dataexporter.actors.RequestRouter;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
@@ -34,7 +35,7 @@ private static ActorRef actorRef;
 static {
     // Creating Actor for the Data exporter
     ProjectLogger.log("Creating Actor System in BaseController", LoggerEnum.INFO.name());
-    system = ActorSystem.create("data-exporter");
+    system = ActorSystem.create(Constants.ACTOR_SYSTEM);
     timeout = Timeout.apply(2, TimeUnit.MINUTES);
     actorRef = system.actorOf(RequestRouter.props(), RequestRouter.class.getSimpleName());
 

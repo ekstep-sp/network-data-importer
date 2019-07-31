@@ -7,18 +7,18 @@
 #GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 # All Node Request routes
-POST    /v1/node/create                   controllers.node.NodeController.createNode()
+POST        /v1/node/create                   controllers.node.NodeController.createNode()
 
-PATCH    /v1/node/update                   controllers.node.NodeController.updateNode()
+PATCH       /v1/node/update                   controllers.node.NodeController.updateNode()
 
-# DELETE    /v1/node/delete                   controllers.node.NodeController.deleteNode()
+POST      /v1/node/delete                   controllers.node.NodeController.deleteNode()
 
 # All Node Relation Request routes
-POST    /v1/node/relation/create          controllers.relation.NodeRelationController.createNodeRelation()
+POST        /v1/node/relation/create          controllers.relation.NodeRelationController.createNodeRelation()
 
-PATCH    /v1/node/relation/update          controllers.relation.NodeRelationController.updateNodeRelation()
+PATCH       /v1/node/relation/update          controllers.relation.NodeRelationController.updateNodeRelation()
 
-# DELETE    /v1/node/relation/delete          controllers.relation.NodeRelationController.deleteNodeRelation()
+POST      /v1/node/relation/delete          controllers.relation.NodeRelationController.deleteNodeRelation()
 
 # All JWT Authentication Request routes
-POST    /v1/auth/create                   controllers.auth.AuthenticationController.createUserToken()
+POST        /v1/auth/create                   controllers.auth.AuthenticationController.createUserToken()
