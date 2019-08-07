@@ -8,7 +8,9 @@ public enum ActorOperation {
 
     CREATE_RELATION("createRelation"),
     UPDATE_RELATION("updateRelation"),
-    DELETE_RELATION("deleteRelation");
+    DELETE_RELATION("deleteRelation"),
+
+    GET_ALL_DATA("getAllData");
 
 
     private String value;

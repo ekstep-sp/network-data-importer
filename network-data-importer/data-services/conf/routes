@@ -22,3 +22,7 @@ POST      /v1/node/relation/delete          controllers.relation.NodeRelationCon
 
 # All JWT Authentication Request routes
 POST        /v1/auth/create                   controllers.auth.AuthenticationController.createUserToken()
+
+GET         /v1/data/read                   controllers.data.DataController.getAllData()
+
+OPTIONS         /v1/data/read                   controllers.data.DataController.getAllData()

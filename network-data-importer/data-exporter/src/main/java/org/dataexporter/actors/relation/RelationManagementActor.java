@@ -2,6 +2,7 @@ package org.dataexporter.actors.relation;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
+import akka.actor.UntypedActor;
 import akka.japi.pf.ReceiveBuilder;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
@@ -14,7 +15,7 @@ import org.dataexporter.actors.relation.dao.impl.RelationManagementDaoImpl;
 import java.util.Map;
 
 
-public class RelationManagementActor extends AbstractActor {
+public class RelationManagementActor extends UntypedActor {
 
 
     RelationManagementDao relationManagementDao;
@@ -25,27 +26,36 @@ public class RelationManagementActor extends AbstractActor {
     }
 
 
+
+    @Override
+    public void onReceive(Object message) throws Exception {
+
+        if(message instanceof Request)
+        {
+            Request request = (Request) message;
+            String operation = request.getOperation();
+            ProjectLogger.log("Inside NodeManagementActor Receive", LoggerEnum.DEBUG.name());
+//                  Method method = this.getClass().getMethod(operation,Request.class);
+//                  method.invoke(null,request);
+            switch (operation) {
+                case "createRelation":
+                    createNodeRelation(request);
+                    break;
+                case "updateRelation":
+                    updateNodeRelation(request);
+                    break;
+                case "deleteRelation":
+                    deleteNodeRelation(request);
+                    break;
+                default:
+                    unSupportedOperation(request);
+            }
+        }
+    }
+
     public RelationManagementActor() {
 
-        receive(ReceiveBuilder
-                .match(Request.class, request -> {
                     relationManagementDao = new RelationManagementDaoImpl();
-                    String operation = request.getOperation();
-                    switch (operation) {
-                        case "createRelation":
-                            createNodeRelation(request);
-                            break;
-                        case "updateRelation":
-                            updateNodeRelation(request);
-                            break;
-                        case "deleteRelation":
-                            deleteNodeRelation(request);
-                            break;
-                        default:
-                            unSupportedOperation(request);
-                    }
-                })
-                .build());
     }
 
 

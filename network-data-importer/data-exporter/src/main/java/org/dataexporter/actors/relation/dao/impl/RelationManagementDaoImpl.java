@@ -7,6 +7,7 @@ import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
 import org.commons.responsecode.ResponseCode;
+import org.commons.util.Constants;
 import org.dataexporter.actors.relation.dao.RelationManagementDao;
 import org.neo4j.driver.internal.value.RelationshipValue;
 import org.neo4j.driver.v1.Record;
@@ -27,7 +28,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
 
 
     @Override
-    public Response createNodeRelation(Map<String,Object> relationData) throws ProjectCommonException
+    public Response createNodeRelation(Map<String,Object> relationData) throws Exception
     {
 
         // Create Node Relationship
@@ -72,10 +73,11 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                             check = true;
                         }
                     }
-                    int lastCommaIndex = query.toString().lastIndexOf(',');
-                    if (lastCommaIndex > 0 && check) {
-                        query = new StringBuilder(query.substring(0, lastCommaIndex) + query.substring(lastCommaIndex + 1));
-                    }
+//                    int lastCommaIndex = query.toString().lastIndexOf(',');
+//                    if (lastCommaIndex > 0 && check) {
+//                        query = new StringBuilder(query.substring(0, lastCommaIndex) + query.substring(lastCommaIndex + 1));
+//                    }
+                    query.append(Constants.FLAG).append(": false");
                     query.append("}]->(b) RETURN r");
 
                     ProjectLogger.log("Query generated to Create Node Relation : " + query, LoggerEnum.INFO.name());
@@ -100,7 +102,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
     }
 
     @Override
-    public Response updateNodeRelation(Map<String,Object> relationData) throws ProjectCommonException{
+    public Response updateNodeRelation(Map<String,Object> relationData) throws Exception{
 
         // To update Node Relationships
         Response response= new Response();
@@ -182,7 +184,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
     }
 
     @Override
-    public Response deleteNodeRelation(Map<String,Object> relationData) throws ProjectCommonException {
+    public Response deleteNodeRelation(Map<String,Object> relationData) throws Exception {
 
         // To update Node Relationships
         Response response= new Response();

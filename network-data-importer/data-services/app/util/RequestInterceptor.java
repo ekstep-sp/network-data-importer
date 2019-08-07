@@ -34,6 +34,7 @@ public class RequestInterceptor implements play.http.ActionCreator {
         restrictedUrlList.add("/v1/node/relation/create");
         restrictedUrlList.add("/v1/node/relation/update");
         restrictedUrlList.add("/v1/node/relation/delete");
+        restrictedUrlList.add("/v1/data/read");
 
         tokenKeys = new ArrayList<>();
         tokenKeys.add("user-token");

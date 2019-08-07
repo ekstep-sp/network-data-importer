@@ -1,5 +1,7 @@
 package controllers.node;
 
+import akka.stream.javadsl.Source;
+import akka.util.ByteString;
 import com.google.inject.Inject;
 import controllers.BaseController;
 import controllers.node.validator.NodeRequestValidator;
@@ -7,18 +9,27 @@ import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
+import org.commons.response.Response;
 import org.commons.util.ActorOperation;
 import org.commons.util.Constants;
 import org.dataexporter.actors.node.NodeManagementActor;
 import org.dataimporter.DataImportManagement;
+import play.api.mvc.ResponseHeader;
+import play.http.HttpEntity;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 
-import java.io.File;
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialException;
+import java.io.*;
+import java.nio.file.Files;
+import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -39,7 +50,27 @@ public class NodeController extends BaseController {
 
     public CompletionStage<Result> createNode() {
         ProjectLogger.log("Create Node Api called", LoggerEnum.DEBUG.name());
-            return processNodeRequest(request(), ActorOperation.CREATE_NODE.getValue(),httpExecutionContext);
+//        File file = (File)((request().body().asMultipartFormData().getFile(Constants.DATA).getFile()));
+//        FileInputStream inputStream = null;
+//        try {
+//            inputStream = new FileInputStream(file);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        byte[] bytesArray = new byte[(int) file.length()];
+//        try {
+//            inputStream.read(bytesArray);
+//            return ok(new SerialBlob(bytesArray));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (SerialException e) {
+//            e.printStackTrace();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return ok();
+
+        return processNodeRequest(request(), ActorOperation.CREATE_NODE.getValue(),httpExecutionContext);
     }
 
     public CompletionStage<Result> updateNode() {
@@ -74,7 +105,15 @@ public class NodeController extends BaseController {
                     },
                     httpExecutionContext.current());
         }
-        return (handleCustomRequest(customRequest,httpExecutionContext,NodeManagementActor.class.getSimpleName()));
+        return handleCustomRequest(customRequest,httpExecutionContext,NodeManagementActor.class.getSimpleName())
+                .thenApply(response -> {
+            Result result;
+                    if(response instanceof Result)
+                        result = (Result) response;
+                    else
+                        result = ok(Json.toJson((Map<String,Object>)response));
+                    return result;
+                });
     }
 
 

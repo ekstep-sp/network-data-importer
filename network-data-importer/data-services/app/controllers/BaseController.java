@@ -4,6 +4,8 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
@@ -35,7 +37,8 @@ private static ActorRef actorRef;
 static {
     // Creating Actor for the Data exporter
     ProjectLogger.log("Creating Actor System in BaseController", LoggerEnum.INFO.name());
-    system = ActorSystem.create(Constants.ACTOR_SYSTEM);
+    Config customConf = ConfigFactory.load();
+    system = ActorSystem.create(Constants.ACTOR_SYSTEM, customConf);
     timeout = Timeout.apply(2, TimeUnit.MINUTES);
     actorRef = system.actorOf(RequestRouter.props(), RequestRouter.class.getSimpleName());
 
@@ -55,11 +58,15 @@ public BaseController() {
 
 
 
-    protected CompletionStage<Result> handleCustomRequest(Request request,HttpExecutionContext httpExecutionContext,String className) {
+    protected CompletionStage<Object> handleCustomRequest(Request request,HttpExecutionContext httpExecutionContext,String className) {
     // To handle the custom request generated after reading the file from the request by using the Actor Model System of Data-Exporter
 
         request.setActorClassName(className);
 
+//        for(int i=0 ; i< 3; i++)
+//        {
+//            actorRef.tell(request,ActorRef.noSender());
+//        }
         return FutureConverters.toJava(
                 Patterns.ask(actorRef, request, timeout))
                 .thenApplyAsync(response -> {
@@ -72,7 +79,8 @@ public BaseController() {
                     else if(response instanceof Response) {
                         Map<String,Object> responseMap = ((Response)response).getResponse();
                         ProjectLogger.log("Actor Success Response : "+responseMap, LoggerEnum.INFO.name());
-                        return ok(Json.toJson(responseMap));
+                        return responseMap;
+//                        return ok(Json.toJson(responseMap));
                     }
                     else {
                         ProjectLogger.log("Unknown response from the Actor", LoggerEnum.WARN.name());

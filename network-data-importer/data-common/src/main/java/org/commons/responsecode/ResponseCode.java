@@ -19,7 +19,10 @@ public enum ResponseCode {
     databaseAuthenticationError(400, "Neo4j Connection Failed", "Failed to connect to Neo4j database due to incorrect credentials."),
     fileMissingError(500,"Internal Server Error","Unable to read the {0} file."),
     unsupportedFileTypeError(400, "Unsupported File Type", "Please provide file of type {0} or {1} "),
-    expiredTokenError(403, "Forbidden", "User Token expired. Please create and provide a new {0}.");
+    expiredTokenError(403, "Forbidden", "User Token expired. Please create and provide a new {0}."),
+    dataRetrievingError(500,"Get Data Error","Failed to read data from the database"),
+    dataProcessingError(500,"Process Data Error","Failed to process data"),
+    FileCreationError(500,"File Creation Error","Unable to Build file for the data");
 
 
     private int responseCode;

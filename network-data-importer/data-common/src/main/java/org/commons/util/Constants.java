@@ -13,6 +13,7 @@ public final class Constants {
     public static final String SUBJECT = "subject";
     public static final String USER_TOKEN = "user-token";
     public static final String DATE_TIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
+    public static final String FILE_DATE_TIME_FORMAT = "E,dd-MMM-yyyy-HH:mm:ss";
     public static final String STATUS = "status";
     public static final String ERROR_CODE = "Error Code";
     public static final String ERROR_MESSAGE = "Error Message";
@@ -25,5 +26,7 @@ public final class Constants {
     public static final String SUCCESS = "Success";
     public static final String SUCCESS_COUNT = "Success Count";
     public static final String DATA_LINE_NUMBER = "Data Line Number";
+    public static final String FLAG = "deleted";
+    public static final String SUCCESS_DETAILS = "success details";
 
 }

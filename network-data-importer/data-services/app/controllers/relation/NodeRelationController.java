@@ -76,7 +76,15 @@ public class NodeRelationController extends BaseController {
                     },
                     httpExecutionContext.current());
         }
-        return (handleCustomRequest(customRequest,httpExecutionContext, RelationManagementActor.class.getSimpleName()));
+        return handleCustomRequest(customRequest,httpExecutionContext,RelationManagementActor.class.getSimpleName())
+                .thenApply(response -> {
+                    Result result;
+                    if(response instanceof Result)
+                        result = (Result) response;
+                    else
+                        result = ok(Json.toJson((Map<String,Object>)response));
+                    return result;
+                });
     }
 
 }

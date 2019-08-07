@@ -12,9 +12,11 @@ public class Response implements Serializable {
     private Integer successCount;
     private String operation;
     private Map<String,List<String>> errorData;
+    private Map<String,Object> successData;
 
     public Response() {
         errorData = new HashMap<>();
+        successData = new HashMap<>();
         successCount = 0;
         operation = "";
     }
@@ -61,12 +63,15 @@ public class Response implements Serializable {
         {
             responseMap.put(operation, Constants.PARTIAL_SUCCESS);
             responseMap.put(Constants.ERROR_DETAILS,errorData);
-
         }
         else
         {
             responseMap.put(operation,Constants.SUCCESS);
-
+        }
+        if(successData.size()>0)
+        {
+            responseMap.put(operation, Constants.SUCCESS);
+            responseMap.put(Constants.SUCCESS_DETAILS,successData);
         }
         return responseMap;
     }
@@ -78,6 +83,18 @@ public class Response implements Serializable {
 
     public void setOperation(String operation) {
         this.operation = operation;
+    }
+
+    public Map<String,Object> getSuccessData() {
+        return successData;
+    }
+
+    public void setSuccessData(Map<String, Object> successData) {
+        this.successData = successData;
+    }
+
+    public void addSuccessData(String key, Object data) {
+        this.successData.put(key, data);
     }
 }
 

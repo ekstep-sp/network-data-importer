@@ -2,6 +2,7 @@ package org.dataexporter.actors.node;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
+import akka.actor.UntypedActor;
 import akka.japi.pf.ReceiveBuilder;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
@@ -22,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 
-public class NodeManagementActor extends AbstractActor {
+public class NodeManagementActor extends UntypedActor {
 
 
     NodeManagementDao nodeManagementDao;
@@ -32,32 +33,36 @@ public class NodeManagementActor extends AbstractActor {
         return Props.create(NodeManagementActor.class, NodeManagementActor::new);
     }
 
+    @Override
+    public void onReceive(Object message) throws Exception {
 
-    public NodeManagementActor() {
-        receive(ReceiveBuilder
-                .match(Request.class, request -> {
-                    nodeManagementDao = new NodeManagementDaoImpl();
-                    String operation = request.getOperation();
-                    ProjectLogger.log("Inside NodeManagementActor Receive", LoggerEnum.DEBUG.name());
-
+        if(message instanceof Request)
+        {
+            Request request = (Request) message;
+            String operation = request.getOperation();
+            ProjectLogger.log("Inside NodeManagementActor Receive", LoggerEnum.DEBUG.name());
 //                  Method method = this.getClass().getMethod(operation,Request.class);
 //                  method.invoke(null,request);
-                    switch (operation) {
-                        case "createNode": {
-                            createNode(request);
-                            break;
-                        }
-                        case "updateNode":
-                            updateNode(request);
-                            break;
-                        case "deleteNode":
-                            deleteNode(request);
-                            break;
-                        default:
-                            unSupportedOperation(request);
-                    }
-                })
-                .build());
+            switch (operation) {
+                case "createNode": {
+                    createNode(request);
+                    break;
+                }
+                case "updateNode":
+                    updateNode(request);
+                    break;
+                case "deleteNode":
+                    deleteNode(request);
+                    break;
+                 default:
+                     unSupportedOperation(request);
+            }
+        }
+    }
+
+    public NodeManagementActor()  {
+        nodeManagementDao = new NodeManagementDaoImpl();
+
     }
 
 
@@ -66,6 +71,7 @@ public class NodeManagementActor extends AbstractActor {
         ProjectLogger.log("Create Node method called", LoggerEnum.DEBUG.name());
         try {
             Map<String,Object> requestMap = request.getRequest();
+            nodeManagementDao = new NodeManagementDaoImpl();
 
             Response response = nodeManagementDao.createNode((Map<String, Object>) requestMap.get("data"));
             sender().tell(response, self());
@@ -130,5 +136,6 @@ public class NodeManagementActor extends AbstractActor {
         ProjectLogger.log("Unsupported Operation",e, LoggerEnum.ERROR.name());
         sender().tell(e,self());
     }
+
 
 }
