@@ -47,10 +47,10 @@ public class DataController extends BaseController {
                             Object fileData = response.get("success details");
                             File file = (File) (((Map<String, Object>) fileData).get("file"));
                             ProjectLogger.log("Total File Size : " + (file.length() / 1024) + "kb", LoggerEnum.DEBUG.name());
-//                        ProjectLogger.log("Total File Size : "+Long.toString(file.getTotalSpace()), LoggerEnum.DEBUG.name());
                             result = ok(new File(file.getAbsolutePath()));
-                            result.withHeader("content-disposition", "inline;filename=" + file.getName());
-                            result.withHeader("Content-Type", "text/csv");
+                            result.withHeader("Access-Control-Allow-Origin","true");
+//                            result.withHeader("content-disposition", "inline;filename=" + file.getName());
+//                            result.withHeader("Content-Type", "text/csv");
                         }
                         else
                         {

@@ -26,7 +26,6 @@ public class NodeRelationController extends BaseController {
     // to handle all Node Relation related requests
 
     private HttpExecutionContext httpExecutionContext;
-    Request request;
 
     public NodeRelationController() {
 

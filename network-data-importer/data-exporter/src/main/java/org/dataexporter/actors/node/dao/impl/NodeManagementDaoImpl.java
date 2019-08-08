@@ -1,9 +1,7 @@
 package org.dataexporter.actors.node.dao.impl;
 
 
-import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import org.commons.database.Neo4jConnectionManager;
-import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
@@ -11,10 +9,8 @@ import org.commons.util.Constants;
 import org.dataexporter.actors.node.dao.NodeManagementDao;
 import org.neo4j.driver.internal.value.NodeValue;
 import org.neo4j.driver.v1.*;
-
 import java.util.*;
-//import java.util.concurrent.CompletableFuture;
-//import java.util.concurrent.CompletionStage;
+
 
 public class NodeManagementDaoImpl implements NodeManagementDao {
 
@@ -27,7 +23,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
 
 
     @Override
-    public Response createNode(Map<String,Object> nodeData) throws Exception {
+    public Response createNode(Map<String,Object> nodeData) {
 
         // To create a Node
         Response response= new Response();
@@ -65,14 +61,12 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 }
                 else
                 {
-                    boolean check = false;
                     query = new StringBuilder("CREATE (a:`" + nodeDetailsEach.get(0).trim() + "` { ");
                     for (int i = 1; i < header.size(); i++) {
                         if (!nodeDetailsEach.get(i).isEmpty()) {
                             query.append("`").append(header.get(i).trim());
                             query.append("`:\"").append(nodeDetailsEach.get(i).trim()).append("\"");
                             query.append(",");
-                            check = true;
                         }
                     }
 
@@ -85,7 +79,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
 
                     ProjectLogger.log("Query generated to CREATE Node : "+query, LoggerEnum.INFO.name());
 
-                    StringBuilder finalQuery = query;
+//                    StringBuilder finalQuery = query;
 //                    Transaction transaction = session.beginTransaction();
 //                    try
 //                    {
@@ -194,29 +188,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
     }
 
 
-
-//    @Override
-//    public void createNode(String query) {
-//
-//        // To create a Node
-//        ProjectLogger.log("Create Node called in NodeManagementDaoImpl", LoggerEnum.DEBUG.name());
-//
-//        StatementResult result = null;
-//            try (Session session = getSession()) {
-//
-//                result = session.run(query);
-//
-//            }
-//            catch (Error | Exception e) {
-//                ProjectLogger.log("Error in Data",e, LoggerEnum.ERROR.name());
-////                response.addErrorData("Error in data",dataCount+1);
-//            }
-////        return result;
-//    }
-
-
     @Override
-    public Response updateNode(Map<String,Object> nodeData) throws Exception {
+    public Response updateNode(Map<String,Object> nodeData) {
 
         // Update a Node
         Response response= new Response();
@@ -300,7 +273,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
 
 
     @Override
-    public Response deleteNode(Map<String,Object> nodeData) throws Exception {
+    public Response deleteNode(Map<String,Object> nodeData) {
 
         // Update a Node
         Response response = new Response();
@@ -346,13 +319,16 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                         ProjectLogger.log("Duplicate Data Present : " + (recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
                         response.addErrorData("Duplicate Data Present", dataCount + 1);
                     } else {
-                        query.append(" DETACH DELETE a");
-                        ProjectLogger.log("Query generated to DELETE Node : " + query, LoggerEnum.INFO.name());
-                        result = session.run(query.toString());
+//                        query.append(" DETACH DELETE a");
+
+                        ProjectLogger.log("Query generated to DELETE Node : " + query+" SET a."+Constants.FLAG+"=true", LoggerEnum.INFO.name());
+                        result = session.run(query.toString()+" SET a."+Constants.FLAG+"=true");
                         if (result.hasNext()) {
                             record = result.next();
                             ProjectLogger.log("Node deleted successfully : " + record.asMap(), LoggerEnum.INFO.name());
                         }
+
+                        session.run(query.toString()+",(a)-[r]-() SET r."+ Constants.FLAG+"=true");
 
                         response.addSuccess();
                     }

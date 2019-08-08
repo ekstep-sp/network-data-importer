@@ -21,20 +21,15 @@ import java.lang.reflect.Method;
 
 public class RequestInterceptor implements play.http.ActionCreator {
 
-    private static List<String> restrictedUrlList;
+    private static List<String> openUrlList;
     private static List<String> tokenKeys;
 
     // To handle authentication
 
     static {
-        restrictedUrlList = new ArrayList<>();
-        restrictedUrlList.add("/v1/node/create");
-        restrictedUrlList.add("/v1/node/update");
-        restrictedUrlList.add("/v1/node/delete");
-        restrictedUrlList.add("/v1/node/relation/create");
-        restrictedUrlList.add("/v1/node/relation/update");
-        restrictedUrlList.add("/v1/node/relation/delete");
-        restrictedUrlList.add("/v1/data/read");
+        openUrlList = new ArrayList<>();
+        openUrlList.add("/v1/auth/create");
+        openUrlList.add("/v1/data/read");
 
         tokenKeys = new ArrayList<>();
         tokenKeys.add("user-token");
@@ -54,7 +49,7 @@ public class RequestInterceptor implements play.http.ActionCreator {
 
                 Http.Request request = ctx.request();
                 Map<String,String[]> headers = request.headers();
-                if(restrictedUrlList.contains(request.path())) {
+                if(!openUrlList.contains(request.path())) {
                     try {
 
                         String userToken = getToken(headers);
@@ -64,6 +59,7 @@ public class RequestInterceptor implements play.http.ActionCreator {
                             new JwtAuthentication().verifyUserToken(userToken);
                         }
                     } catch (ProjectCommonException exc) {
+                        ProjectLogger.log("RequestInterceptor: Unauthorised access from path  = " + request.path(),exc, LoggerEnum.INFO.name());
                         return CompletableFuture.supplyAsync(() -> Results.status(exc.getResponseCode(), Json.toJson(exc.toMap())));
                     }
                     ProjectLogger.log("User Access Validated. Access Granted", LoggerEnum.DEBUG.name());

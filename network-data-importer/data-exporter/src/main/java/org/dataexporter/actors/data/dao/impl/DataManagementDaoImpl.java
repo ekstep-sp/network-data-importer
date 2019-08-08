@@ -6,9 +6,7 @@ import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
 import org.commons.responsecode.ResponseCode;
-import org.commons.util.Constants;
 import org.dataexporter.actors.data.dao.DataManagementDao;
-import org.neo4j.driver.internal.value.ListValue;
 import org.neo4j.driver.internal.value.NodeValue;
 import org.neo4j.driver.internal.value.NullValue;
 import org.neo4j.driver.internal.value.RelationshipValue;
@@ -22,9 +20,9 @@ import java.util.*;
 
 public class DataManagementDaoImpl implements DataManagementDao {
 
-    List<List<String>> header;
-    List<List<List<String>>> data;
-    List<List<String>> dataEach;
+    private List<List<String>> header;
+    private List<List<List<String>>> data;
+    private List<List<String>> dataEach;
 
 
     public DataManagementDaoImpl() {
@@ -35,12 +33,11 @@ public class DataManagementDaoImpl implements DataManagementDao {
 
 
     @Override
-    public Response getAllData() throws Exception {
+    public Response getAllData() {
 
         // Create Node Relationship
         Response response= new Response();
         response.setOperation("Read All Data");
-        int dataCount=0;
         header.add(new ArrayList<>());
         header.add(new ArrayList<>());
         header.add(new ArrayList<>());
@@ -55,19 +52,21 @@ public class DataManagementDaoImpl implements DataManagementDao {
                 query.append(" RETURN a,b,r");
                 ProjectLogger.log("Query generated to get all Nodes having Relationships : " + query, LoggerEnum.INFO.name());
 
-                StatementResult result = session.run(query.toString());
+                StatementResult resultWithRelation = session.run(query.toString());
 
                 query = new StringBuilder("MATCH (c) WHERE NOT (c)-[]-()");
                 query.append(" RETURN c");
-                StatementResult result1 = session.run(query.toString());
-                if (!(result.hasNext() || result1.hasNext())) {
+                ProjectLogger.log("Query generated to get all Nodes having No Relationships : " + query, LoggerEnum.INFO.name());
+
+                StatementResult resultWithoutRelation = session.run(query.toString());
+                if (!(resultWithRelation.hasNext() || resultWithoutRelation.hasNext())) {
                     ProjectLogger.log("No Data found in the Database", LoggerEnum.INFO.name());
                     response.addSuccessData("Success", "No Data Found");
                     return response;
                 } else {
                     try {
-                    if (result.hasNext()) {
-                        List<Record> recordList = result.list();
+                    if (resultWithRelation.hasNext()) {
+                        List<Record> recordList = resultWithRelation.list();
 //                    System.out.println(recordList);
                         for (Record record : recordList) {
                             dataEach = new ArrayList<>();
@@ -77,7 +76,7 @@ public class DataManagementDaoImpl implements DataManagementDao {
 
                             for (int i = 0; i < record.size(); i++) {
                                 if (!(record.get(i) instanceof NullValue) && record.get(i) instanceof NodeValue) {
-                                    Node node = (Node) record.get(i).asNode();
+                                    Node node = record.get(i).asNode();
                                     addNodeLabel(node, i);
                                     addNode(node, i);
                                 } else if (!(record.get(i) instanceof NullValue) && record.get(i) instanceof RelationshipValue) {
@@ -92,8 +91,8 @@ public class DataManagementDaoImpl implements DataManagementDao {
                         }
                     }
 
-                    if (result1.hasNext()) {
-                        List<Record> recordList = result1.list();
+                    if (resultWithoutRelation.hasNext()) {
+                        List<Record> recordList = resultWithoutRelation.list();
 //                    System.out.println(recordList);
                         for (Record record : recordList) {
                             dataEach = new ArrayList<>();

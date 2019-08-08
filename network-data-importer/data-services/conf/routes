@@ -23,6 +23,7 @@ POST      /v1/node/relation/delete          controllers.relation.NodeRelationCon
 # All JWT Authentication Request routes
 POST        /v1/auth/create                   controllers.auth.AuthenticationController.createUserToken()
 
+# Data export routes to export and download the data in a .csv file
 GET         /v1/data/read                   controllers.data.DataController.getAllData()
 
 OPTIONS         /v1/data/read                   controllers.data.DataController.getAllData()

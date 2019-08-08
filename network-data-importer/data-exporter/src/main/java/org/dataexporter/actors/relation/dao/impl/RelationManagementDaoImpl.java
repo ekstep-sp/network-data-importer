@@ -2,13 +2,12 @@ package org.dataexporter.actors.relation.dao.impl;
 
 
 import org.commons.database.Neo4jConnectionManager;
-import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
-import org.commons.responsecode.ResponseCode;
 import org.commons.util.Constants;
 import org.dataexporter.actors.relation.dao.RelationManagementDao;
+import org.neo4j.driver.internal.value.NullValue;
 import org.neo4j.driver.internal.value.RelationshipValue;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
@@ -28,7 +27,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
 
 
     @Override
-    public Response createNodeRelation(Map<String,Object> relationData) throws Exception
+    public Response createNodeRelation(Map<String,Object> relationData)
     {
 
         // Create Node Relationship
@@ -49,28 +48,30 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                 StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})-[");
                 query.append("r:`").append(relationDetailEach.get(4).trim()).append("`");
                 query.append("]-(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
-                query.append(" RETURN r");
+                query.append(" RETURN a,b,r");
                 ProjectLogger.log("Query generated to check if Node Relation already exists : " + query, LoggerEnum.INFO.name());
 
                 result = session.run(query.toString());
-                if (result.hasNext()) {
+                Record record = result.list().get(0);
+                if (record.get(0) instanceof NullValue || record.get(1) instanceof NullValue)
+                {
+                    ProjectLogger.log("Error in Data : No Such Node Present", LoggerEnum.ERROR.name());
+                    response.addErrorData("Node Data Incorrect",dataCount+1);
+                }
+                else if (!(record.get(2) instanceof NullValue)) {
                     // Check if the relationship between nodes already exists
-                    List<Record> recordList = result.list();
-                    int nodeCount = recordList.size();
-                    ProjectLogger.log("Relation already exists : "+(recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
+                    ProjectLogger.log("Relation already exists : "+record.get(2).asMap(), LoggerEnum.WARN.name());
                     response.addErrorData("Data Already Exists",dataCount+1);
                 } else {
                     // Create Relationship Between Nodes
                     query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"}),");
                     query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
                     query.append(" CREATE (a)-[r:`").append(relationDetailEach.get(4).trim()).append("` {");
-                    boolean check = false;
                     for (int i = 5; i < header.size(); i++) {
                         if (!relationDetailEach.get(i).isEmpty()) {
                             query.append("`").append(header.get(i).trim()).append("`");
                             query.append(" : \"").append(relationDetailEach.get(i).trim()).append("\"");
                             query.append(",");
-                            check = true;
                         }
                     }
 //                    int lastCommaIndex = query.toString().lastIndexOf(',');
@@ -83,7 +84,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                     ProjectLogger.log("Query generated to Create Node Relation : " + query, LoggerEnum.INFO.name());
                     result = session.run(query.toString());
                     if (result.hasNext()) {
-                        Record record = result.next();
+                        record = result.next();
                         RelationshipValue relation = (RelationshipValue) record.get(0);
                         ProjectLogger.log("Node Relation created successfully : "+relation.asMap(), LoggerEnum.INFO.name());
                     }
@@ -102,7 +103,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
     }
 
     @Override
-    public Response updateNodeRelation(Map<String,Object> relationData) throws Exception{
+    public Response updateNodeRelation(Map<String,Object> relationData) {
 
         // To update Node Relationships
         Response response= new Response();
@@ -184,11 +185,11 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
     }
 
     @Override
-    public Response deleteNodeRelation(Map<String,Object> relationData) throws Exception {
+    public Response deleteNodeRelation(Map<String,Object> relationData) {
 
         // To update Node Relationships
         Response response= new Response();
-        response.setOperation("Update Node Relation");
+        response.setOperation("Delete Node Relation");
         int dataCount=0;
 
         header = (List<String>) relationData.get("header");
@@ -233,10 +234,10 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                     else {
                         // Deleting relationship between Node
 
-                        query.append(" DELETE r");
+//                        query.append(" DELETE r");
 
-                        ProjectLogger.log("Query generated to DELETE Node Relation : "+query, LoggerEnum.INFO.name());
-                        result = session.run(query.toString());
+                        ProjectLogger.log("Query generated to DELETE Node Relation : "+query+" SET r."+Constants.FLAG+"=true", LoggerEnum.INFO.name());
+                        result = session.run(query.toString()+" SET r."+Constants.FLAG+"=true");
                         if (result.hasNext()) {
                             record = result.next();
                             ProjectLogger.log("Node Relation deleted successfully : " + record.asMap(), LoggerEnum.INFO.name());
