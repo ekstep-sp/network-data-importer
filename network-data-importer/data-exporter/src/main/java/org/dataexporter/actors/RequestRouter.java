@@ -77,8 +77,8 @@ public class RequestRouter extends UntypedActor {
 //                ActorRef actorRef = getContext().actorOf((Props) method.invoke(null), actorClass.getSimpleName());
 //                DefaultResizer defaultResizer = new DefaultResizer(2,10,1,0.2,0.5,0.2,10);
 //                System.out.println(ConfigFactory.load());
-                RouterConfig routerConfig = new SmallestMailboxPool(2).withResizer(new DefaultResizer(2,5));
-                ActorRef actorRef = getContext().actorOf((Props.create(actorClass)).withRouter(new FromConfig().withFallback(routerConfig)), actorClass.getSimpleName());
+//                RouterConfig routerConfig = new SmallestMailboxPool(2).withResizer(new DefaultResizer(2,5));
+                ActorRef actorRef = getContext().actorOf((Props.create(actorClass)).withRouter(new FromConfig()), actorClass.getSimpleName());
 
                 actorCache.put(actorClass.getSimpleName(), actorRef);
             }

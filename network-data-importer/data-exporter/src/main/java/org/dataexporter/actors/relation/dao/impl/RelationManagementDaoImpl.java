@@ -43,6 +43,11 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
 
             dataCount++;
 
+            if(relationDetailEach.get(0).trim().isEmpty())
+            {
+                continue;
+            }
+
             try {
 
                 StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})-[");
@@ -52,17 +57,15 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                 ProjectLogger.log("Query generated to check if Node Relation already exists : " + query, LoggerEnum.INFO.name());
 
                 result = session.run(query.toString());
-                Record record = result.list().get(0);
-                if (record.get(0) instanceof NullValue || record.get(1) instanceof NullValue)
+                List<Record> recordList = result.list();
+                Record record = null;
+                if(recordList.size()>0)
                 {
-                    ProjectLogger.log("Error in Data : No Such Node Present", LoggerEnum.ERROR.name());
-                    response.addErrorData("Node Data Incorrect",dataCount+1);
-                }
-                else if (!(record.get(2) instanceof NullValue)) {
                     // Check if the relationship between nodes already exists
                     ProjectLogger.log("Relation already exists : "+record.get(2).asMap(), LoggerEnum.WARN.name());
                     response.addErrorData("Data Already Exists",dataCount+1);
-                } else {
+                }
+                else {
                     // Create Relationship Between Nodes
                     query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"}),");
                     query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
