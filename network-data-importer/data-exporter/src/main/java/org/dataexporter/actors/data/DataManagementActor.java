@@ -2,6 +2,7 @@ package org.dataexporter.actors.data;
 
 import akka.actor.Props;
 import akka.actor.UntypedActor;
+import com.google.common.io.Files;
 import com.opencsv.CSVWriter;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
@@ -69,7 +70,8 @@ public class DataManagementActor extends UntypedActor {
                 ProjectLogger.log("File Data : " + response.getResponse().toString(), LoggerEnum.DEBUG.name());
             SimpleDateFormat formatter = new SimpleDateFormat(Constants.FILE_DATE_TIME_FORMAT);
             Date date = new Date();
-            File file = File.createTempFile(formatter.format(date) + "-", ".csv");
+//            File file = File.createTempFile(formatter.format(date) + "_", ".csv");
+                File file = new File(Files.createTempDir(),formatter.format(date)+".csv");
             try {
                 // create FileWriter object with file as parameter
                 FileWriter outputFile = new FileWriter(file);

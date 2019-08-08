@@ -49,9 +49,9 @@ public class RequestInterceptor implements play.http.ActionCreator {
 
                 Http.Request request = ctx.request();
                 Map<String,String[]> headers = request.headers();
+                addResponseHeaderData(ctx);
                 if(!openUrlList.contains(request.path())) {
                     try {
-
                         String userToken = getToken(headers);
                         if (userToken == null || userToken.isEmpty()) {
                             throw new ProjectCommonException(ResponseCode.unAuthorized);
@@ -78,5 +78,14 @@ public class RequestInterceptor implements play.http.ActionCreator {
             }
         }
         return null;
+    }
+
+
+    private void addResponseHeaderData(Http.Context ctx)
+    {
+        ctx.response().setHeader("Access-Control-Allow-Origin","*");
+        ctx.response().setHeader("Access-Control-Allow-Methods", "*");
+        ctx.response().setHeader("Access-Control-Allow-Headers", "*");
+        ctx.response().setHeader("Access-Control-Allow-Credentials", "true");
     }
 }

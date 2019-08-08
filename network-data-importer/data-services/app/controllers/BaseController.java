@@ -17,7 +17,6 @@ import org.dataexporter.actors.RequestRouter;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
-import play.mvc.Result;
 import play.mvc.Results;
 import scala.compat.java8.FutureConverters;
 import java.util.Map;
@@ -48,10 +47,6 @@ public BaseController() {
 
 }
 
-//    @Inject
-//    public BaseController(HttpExecutionContext ec) {
-//        this.httpExecutionContext = ec;
-//    }
 
 
 
@@ -62,11 +57,6 @@ public BaseController() {
     // To handle the custom request generated after reading the file from the request by using the Actor Model System of Data-Exporter
 
         request.setActorClassName(className);
-
-//        for(int i=0 ; i< 3; i++)
-//        {
-//            actorRef.tell(request,ActorRef.noSender());
-//        }
         return FutureConverters.toJava(
                 Patterns.ask(actorRef, request, timeout))
                 .thenApplyAsync(response -> {
