@@ -25,9 +25,13 @@ public class ErrorHandler implements HttpErrorHandler {
             message = Constants.API_NOT_FOUND;
         ProjectCommonException commonException = new ProjectCommonException(statusCode, "Client Error", message);
         ProjectLogger.log("Client Error", commonException, LoggerEnum.ERROR.name());
+        Result result = Results.status(commonException.getResponseCode(), Json.toJson(commonException.toMap()));
+        result.withHeader(Constants.ACCESS_CONTROL_ALLOW_ORIGIN,"*");
+        result.withHeader(Constants.ACCESS_CONTROL_ALLOW_METHODS, "*");
+        result.withHeader(Constants.ACCESS_CONTROL_ALLOW_HEADERS, "*");
+        result.withHeader(Constants.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
 
-        return CompletableFuture.completedFuture( Results.status(commonException.getResponseCode(), Json.toJson(commonException.toMap())
-        ));
+        return CompletableFuture.completedFuture(result);
     }
 
     public CompletionStage<Result> onServerError(RequestHeader request, Throwable exception) {

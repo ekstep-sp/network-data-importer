@@ -7,6 +7,7 @@ import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
 import org.commons.util.Constants;
 import org.dataexporter.actors.relation.dao.RelationManagementDao;
+import org.neo4j.driver.internal.value.NodeValue;
 import org.neo4j.driver.internal.value.NullValue;
 import org.neo4j.driver.internal.value.RelationshipValue;
 import org.neo4j.driver.v1.Record;
@@ -50,49 +51,79 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
 
             try {
 
-                StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})-[");
-                query.append("r:`").append(relationDetailEach.get(4).trim()).append("`");
-                query.append("]-(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
-                query.append(" RETURN a,b,r");
+                StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"");
+                query.append(","+ Constants.FLAG +":false");
+                query.append("}),");
+                query.append("(b:`" + relationDetailEach.get(2).trim() + "` {`" + header.get(3).trim() + "`: \"" + relationDetailEach.get(3).trim() + "\"");
+                query.append(","+ Constants.FLAG +":false");
+                query.append("})");
+                query.append("WITH a,b ");
+                query.append("OPTIONAL MATCH (a)-[r:`");
+                query.append(relationDetailEach.get(4).trim());
+                query.append("` {").append(Constants.FLAG +":false").append("}");
+                query.append("]-(b) RETURN a,b,r");
                 ProjectLogger.log("Query generated to check if Node Relation already exists : " + query, LoggerEnum.INFO.name());
 
                 result = session.run(query.toString());
                 List<Record> recordList = result.list();
                 Record record = null;
-                if(recordList.size()>0)
+                if(recordList.size()==1)
                 {
-                    // Check if the relationship between nodes already exists
-                    ProjectLogger.log("Relation already exists : "+record.get(2).asMap(), LoggerEnum.WARN.name());
-                    response.addErrorData("Data Already Exists",dataCount+1);
-                }
-                else {
-                    // Create Relationship Between Nodes
-                    query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"}),");
-                    query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
-                    query.append(" CREATE (a)-[r:`").append(relationDetailEach.get(4).trim()).append("` {");
-                    for (int i = 5; i < header.size(); i++) {
-                        if (!relationDetailEach.get(i).isEmpty()) {
-                            query.append("`").append(header.get(i).trim()).append("`");
-                            query.append(" : \"").append(relationDetailEach.get(i).trim()).append("\"");
-                            query.append(",");
-                        }
+                    record = recordList.get(0);
+
+                    if(record.get(0) instanceof NullValue || record.get(1) instanceof NullValue)
+                    {
+                        if(record.get(0) instanceof NullValue)
+                        ProjectLogger.log("No such Node Exists : a", LoggerEnum.WARN.name());
+                        if(record.get(1) instanceof NullValue)
+                            ProjectLogger.log("No such Node Exists : b", LoggerEnum.WARN.name());
+                        response.addErrorData("No such Node Exists",dataCount+1);
                     }
+                    else if(!(record.get(2) instanceof NullValue))
+                    {
+                        ProjectLogger.log("Relation already exists : "+record.get(2).asMap(), LoggerEnum.WARN.name());
+                        response.addErrorData("Relationship Already Exists",dataCount+1);
+                    }
+                    else {
+                        // Create Relationship Between Nodes
+                        query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"}),");
+                        query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
+                        query.append(" CREATE (a)-[r:`").append(relationDetailEach.get(4).trim()).append("` {");
+                        for (int i = 5; i < header.size(); i++) {
+                            if (!relationDetailEach.get(i).isEmpty()) {
+                                query.append("`").append(header.get(i).trim()).append("`");
+                                query.append(" : \"").append(relationDetailEach.get(i).trim()).append("\"");
+                                query.append(",");
+                            }
+                        }
 //                    int lastCommaIndex = query.toString().lastIndexOf(',');
 //                    if (lastCommaIndex > 0 && check) {
 //                        query = new StringBuilder(query.substring(0, lastCommaIndex) + query.substring(lastCommaIndex + 1));
 //                    }
-                    query.append(Constants.FLAG).append(": false");
-                    query.append("}]->(b) RETURN r");
+                        query.append(Constants.FLAG).append(": false");
+                        query.append("}]->(b) RETURN r");
 
-                    ProjectLogger.log("Query generated to Create Node Relation : " + query, LoggerEnum.INFO.name());
-                    result = session.run(query.toString());
-                    if (result.hasNext()) {
-                        record = result.next();
-                        RelationshipValue relation = (RelationshipValue) record.get(0);
-                        ProjectLogger.log("Node Relation created successfully : "+relation.asMap(), LoggerEnum.INFO.name());
+                        ProjectLogger.log("Query generated to Create Node Relation : " + query, LoggerEnum.INFO.name());
+                        result = session.run(query.toString());
+                        if (result.hasNext()) {
+                            record = result.next();
+                            RelationshipValue relation = (RelationshipValue) record.get(0);
+                            ProjectLogger.log("Node Relation created successfully : "+relation.asMap(), LoggerEnum.INFO.name());
+                        }
+
+                        response.addSuccess();
                     }
 
-                    response.addSuccess();
+                }
+                else if(recordList.size()>1)
+                {
+                    ProjectLogger.log("Duplicate Node Exists", LoggerEnum.WARN.name());
+                    response.addErrorData("Duplicate Node Exists",dataCount+1);
+                }
+                else
+                {
+                    ProjectLogger.log("No such Node Exists", LoggerEnum.WARN.name());
+                    response.addErrorData("No such Node Exists",dataCount+1);
                 }
             }
             catch (Error |Exception e) {
@@ -124,9 +155,13 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
 
             try {
 
-                StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})");
-                query.append("-[r: `").append(relationDetailEach.get(4).trim()).append("`]-");
-                query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
+                StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"");
+                query.append(","+ Constants.FLAG +":false");
+                query.append("})");
+                query.append("-[r: `").append(relationDetailEach.get(4).trim()).append("`").append("{").append(Constants.FLAG +":false").append("}").append("]-");
+                query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"");
+                query.append(","+ Constants.FLAG +":false");
+                query.append("})");
                 query.append(" RETURN r");
                 ProjectLogger.log("Query generated to check Node Relation Existence : " + query, LoggerEnum.INFO.name());
 
@@ -150,7 +185,10 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                         for (int i = 5; i < header.size(); i++) {
                             if (!relationDetailEach.get(i).isEmpty()) {
                                 query.append("r.`").append(header.get(i).trim());
-                                query.append("` = \"").append(relationDetailEach.get(i).trim()).append("\"");
+                                if(relationDetailEach.get(i).trim().toLowerCase().equals("null"))
+                                    query.append("` = ").append(relationDetailEach.get(i).trim());
+                                else
+                                    query.append("` = \"").append(relationDetailEach.get(i).trim()).append("\"");
                                 query.append(",");
                                 check = true;
                             }
@@ -207,23 +245,27 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
             try {
 
                 boolean check = false;
-                StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"})");
+                StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"");
+                query.append(","+ Constants.FLAG +":false");
+                query.append("}),");
                 query.append("-[r: `").append(relationDetailEach.get(4).trim()).append("` {");
                 for (int i = 5; i < header.size(); i++) {
                     if (!relationDetailEach.get(i).isEmpty()) {
                         query.append("`").append(header.get(i).trim());
                         query.append("`:\"").append(relationDetailEach.get(i).trim()).append("\"");
                         query.append(",");
-                        check = true;
+//                        check = true;
                     }
                 }
-                int lastCommaIndex = query.toString().lastIndexOf(',');
-                if (lastCommaIndex > 0 && check) {
-                    query = new StringBuilder(query.substring(0, lastCommaIndex) + query.substring(lastCommaIndex + 1));
-                }
+                query.append(Constants.FLAG +":false");
+//                int lastCommaIndex = query.toString().lastIndexOf(',');
+//                if (lastCommaIndex > 0 && check) {
+//                    query = new StringBuilder(query.substring(0, lastCommaIndex) + query.substring(lastCommaIndex + 1));
+//                }
                 query.append("}]-");
-                query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"})");
-
+                query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"");
+                query.append(","+ Constants.FLAG +":false");
+                query.append("})");
                 result = session.run(query.toString()+" RETURN r");
                 if(result.hasNext()) {
                     // Check if the relationship exists between Nodes

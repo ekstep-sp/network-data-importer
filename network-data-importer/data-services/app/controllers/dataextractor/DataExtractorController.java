@@ -1,4 +1,4 @@
-package controllers.data;
+package controllers.dataextractor;
 
 import com.google.inject.Inject;
 import controllers.BaseController;
@@ -7,7 +7,7 @@ import org.commons.logger.ProjectLogger;
 import org.commons.request.Request;
 import org.commons.util.ActorOperation;
 import org.commons.util.Constants;
-import org.dataexporter.actors.data.DataManagementActor;
+import org.dataexporter.actors.dataextractor.DataExtractorManagementActor;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
@@ -17,16 +17,16 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
-public class DataController extends BaseController {
+public class DataExtractorController extends BaseController {
 
     private HttpExecutionContext httpExecutionContext;
 
-    public DataController() {
+    public DataExtractorController() {
 
     }
 
     @Inject
-    public DataController(HttpExecutionContext ec) {
+    public DataExtractorController(HttpExecutionContext ec) {
         this.httpExecutionContext = ec;
     }
 
@@ -36,7 +36,7 @@ public class DataController extends BaseController {
         Request customRequest = new Request(ActorOperation.GET_ALL_DATA.getValue());
         customRequest.setRequestPath(request().path());
 
-        return handleCustomRequest(customRequest,httpExecutionContext, DataManagementActor.class.getSimpleName())
+        return handleCustomRequest(customRequest,httpExecutionContext, DataExtractorManagementActor.class.getSimpleName())
                 .thenApply(message -> {
                     Result result;
                     if(message instanceof Result)

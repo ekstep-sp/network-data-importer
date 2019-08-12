@@ -1,5 +1,6 @@
 package org.commons.database;
 
+import javafx.beans.binding.ObjectBinding;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
@@ -7,6 +8,8 @@ import org.commons.responsecode.ResponseCode;
 import org.commons.util.PropertiesCache;
 import org.neo4j.driver.v1.*;
 import org.neo4j.driver.v1.exceptions.AuthenticationException;
+
+import java.util.Map;
 
 public class Neo4jConnectionManager {
 
@@ -77,10 +80,14 @@ public class Neo4jConnectionManager {
         // To check if the database is connected or not
         Session session = driver.session();
         boolean check = false;
-        StatementResult result = session.run("RETURN \"check\" ;");
-        if(result.hasNext())
+        StatementResult result = session.run("RETURN true ;");
+        if(result.hasNext()) {
+            Record record = result.next();
+            Map<String, Object> data = record.asMap();
+            Object flag = data.get("true");
+            if(flag instanceof Boolean && (boolean)flag)
             check = true;
-
+        }
         session.close();
         return check;
     }

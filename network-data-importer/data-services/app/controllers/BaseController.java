@@ -18,13 +18,15 @@ import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
 import play.mvc.Results;
+import play.mvc.With;
 import scala.compat.java8.FutureConverters;
+import util.ResponseHeaders;
+
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-
-
+@With(ResponseHeaders.class)
 public class BaseController extends Controller {
 
 private static ActorSystem system;
@@ -46,9 +48,6 @@ static {
 public BaseController() {
 
 }
-
-
-
 
 
 

@@ -47,6 +47,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 StringBuilder query = new StringBuilder("MATCH (a:`"+ nodeDetailsEach.get(0).trim() + "` {`");
 
                 query.append(header.get(1).trim()).append("`: \"").append(nodeDetailsEach.get(1).trim()).append("\"");
+                query.append(","+ Constants.FLAG +":false");
                 query.append("}) RETURN a");
                 ProjectLogger.log("Query generated to Check if Node already Exists : "+query, LoggerEnum.INFO.name());
 
@@ -56,8 +57,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
 
                     Record record = result.next();
                     NodeValue node = (NodeValue) record.get(0);
-                    ProjectLogger.log("Data Already Present : " + node.asMap(), LoggerEnum.WARN.name());
-                    response.addErrorData("Data Already Present",dataCount+1);
+                    ProjectLogger.log("Node Already Present : " + node.asMap(), LoggerEnum.WARN.name());
+                    response.addErrorData("Node Already Present",dataCount+1);
                 }
                 else
                 {
@@ -209,6 +210,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
 
                 StringBuilder query = new StringBuilder("MATCH (a:`" + nodeDetailsEach.get(0).trim() + "` { `");
                 query.append(header.get(1).trim()).append("`: \"").append(nodeDetailsEach.get(1).trim()).append("\"");
+                query.append(","+ Constants.FLAG +":false");
                 query.append("}) RETURN a");
                 ProjectLogger.log("Query generated to Update Node : "+query, LoggerEnum.INFO.name());
 
@@ -221,8 +223,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                     if(nodeCount > 1)
                     {
                         // update the Node
-                        ProjectLogger.log("Duplicate Data Present : "+(recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
-                        response.addErrorData("Duplicate Data Present",dataCount+1);
+                        ProjectLogger.log("Duplicate Node Present : "+(recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
+                        response.addErrorData("Duplicate Node Present",dataCount+1);
                     }
 
                     else {
@@ -257,8 +259,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 }
                 else
                 {
-                    ProjectLogger.log("No Such Data Present", LoggerEnum.WARN.name());
-                    response.addErrorData("No Such Data Present",dataCount+1);
+                    ProjectLogger.log("No Such Node Present", LoggerEnum.WARN.name());
+                    response.addErrorData("No Such Node Present",dataCount+1);
                 }
 
             }
@@ -291,20 +293,21 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
 
             try {
 
-                boolean check = false;
+//                boolean check = false;
                 StringBuilder query = new StringBuilder("MATCH (a:`" + nodeDetailsEach.get(0).trim() + "` { ");
                 for (int i = 1; i < header.size(); i++) {
                     if (!nodeDetailsEach.get(i).isEmpty()) {
                         query.append("`").append(header.get(i).trim());
                         query.append("`:\"").append(nodeDetailsEach.get(i).trim()).append("\"");
                         query.append(",");
-                        check = true;
+//                        check = true;
                     }
                 }
-                int lastCommaIndex = query.toString().lastIndexOf(',');
-                if (lastCommaIndex > 0 && check) {
-                    query = new StringBuilder(query.substring(0, lastCommaIndex) + query.substring(lastCommaIndex + 1));
-                }
+//                int lastCommaIndex = query.toString().lastIndexOf(',');
+//                if (lastCommaIndex > 0 && check) {
+//                    query = new StringBuilder(query.substring(0, lastCommaIndex) + query.substring(lastCommaIndex + 1));
+//                }
+                query.append(""+ Constants.FLAG +":false");
                 query.append(" })");
 
 
@@ -316,10 +319,13 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
 
                     if (nodeCount > 1) {
                         // update the Node
-                        ProjectLogger.log("Duplicate Data Present : " + (recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
-                        response.addErrorData("Duplicate Data Present", dataCount + 1);
+                        ProjectLogger.log("Duplicate Node Present : " + (recordList.get(0).get(0)).asMap(), LoggerEnum.WARN.name());
+                        response.addErrorData("Duplicate Node Present", dataCount + 1);
                     } else {
 //                        query.append(" DETACH DELETE a");
+
+                        ProjectLogger.log("Query generated to DELETE Node Relationships : " + query+",(a)-[r]-() SET r."+ Constants.FLAG+"=true", LoggerEnum.INFO.name());
+                        session.run(query.toString()+",(a)-[r]-() SET r."+ Constants.FLAG+"=true");
 
                         ProjectLogger.log("Query generated to DELETE Node : " + query+" SET a."+Constants.FLAG+"=true", LoggerEnum.INFO.name());
                         result = session.run(query.toString()+" SET a."+Constants.FLAG+"=true");
@@ -328,13 +334,11 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                             ProjectLogger.log("Node deleted successfully : " + record.asMap(), LoggerEnum.INFO.name());
                         }
 
-                        session.run(query.toString()+",(a)-[r]-() SET r."+ Constants.FLAG+"=true");
-
                         response.addSuccess();
                     }
                 } else {
-                    ProjectLogger.log("No Such Data Present", LoggerEnum.WARN.name());
-                    response.addErrorData("No Such Data Present", dataCount + 1);
+                    ProjectLogger.log("No Such Node Present", LoggerEnum.WARN.name());
+                    response.addErrorData("No Such Node Present", dataCount + 1);
                 }
 
             } catch (Error | Exception e) {

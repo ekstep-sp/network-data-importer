@@ -6,6 +6,15 @@
 # Map static resources from the /public folder to the /assets URL path
 #GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
+
+# To check server and database health
+GET         /                                 controllers.health.HealthController.checkHealth()
+
+GET         /health                           controllers.health.HealthController.checkHealth()
+
+GET         /database/health                  controllers.health.HealthController.checkDatabaseHealth()
+
+
 # All Node Request routes
 POST        /v1/node/create                   controllers.node.NodeController.createNode()
 
@@ -24,6 +33,6 @@ POST      /v1/node/relation/delete          controllers.relation.NodeRelationCon
 POST        /v1/auth/create                   controllers.auth.AuthenticationController.createUserToken()
 
 # Data export routes to export and download the data in a .csv file
-GET         /v1/data/read                   controllers.data.DataController.getAllData()
+GET         /v1/data/read                   controllers.dataextractor.DataExtractorController.getAllData()
 
-OPTIONS         /v1/data/read                   controllers.data.DataController.getAllData()
+OPTIONS         /v1/data/read                   controllers.dataextractor.DataExtractorController.getAllData()

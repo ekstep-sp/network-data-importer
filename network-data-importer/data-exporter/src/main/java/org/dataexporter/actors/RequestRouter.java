@@ -15,7 +15,6 @@ import org.commons.responsecode.ResponseCode;
 import org.reflections.Reflections;
 import scala.collection.immutable.IndexedSeq;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +36,7 @@ public class RequestRouter extends UntypedActor {
     }
 
     @Override
-    public void onReceive(Object message) throws Exception {
+    public void onReceive(Object message) throws ProjectCommonException {
 
         ProjectLogger.log("Inside RequestRouter class", LoggerEnum.DEBUG.name());
 
@@ -53,6 +52,10 @@ public class RequestRouter extends UntypedActor {
                 actorRef.tell(request,sender());
             }
 
+        }
+        else {
+            ProjectLogger.log("Only Objects of Request Class in supported in the RequestRouter Class",LoggerEnum.ERROR.name());
+            sender().tell(ResponseCode.unsupportedObject,self());
         }
 
     }
@@ -70,7 +73,7 @@ public class RequestRouter extends UntypedActor {
             for (Class<? extends UntypedActor> actorClass : actorClasses) {
                 if(actorClass.getSimpleName().equals("RequestRouter"))
                     continue;
-                Method method = actorClass.getMethod("props");
+//                Method method = actorClass.getMethod("props");
 //                ActorRef actorRef = getContext().actorOf(new SmallestMailboxPool(2).props((Props) method.invoke(null)), actorClass.getSimpleName());
 //                ActorRef actorRef = getContext().actorOf(new BalancingPool(5).props((Props)method.invoke(null)),actorClass.getSimpleName());
 //                ActorRef actorRef = getContext().actorOf(Props.create(actorClass).withRouter(new FromConfig()), actorClass.getSimpleName());
@@ -82,9 +85,14 @@ public class RequestRouter extends UntypedActor {
 
                 actorCache.put(actorClass.getSimpleName(), actorRef);
             }
-        } catch (NoSuchMethodException e) {
+        }
+        catch (Exception e) {
+            ProjectLogger.log("Error while creating Actors : ",e,LoggerEnum.ERROR.name());
             e.printStackTrace();
         }
+//        catch (NoSuchMethodException e) {
+//            e.printStackTrace();
+//        }
 //        catch (IllegalAccessException e) {
 //            e.printStackTrace();
 //        } catch (InvocationTargetException e) {

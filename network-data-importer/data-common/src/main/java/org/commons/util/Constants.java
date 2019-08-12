@@ -28,5 +28,10 @@ public final class Constants {
     public static final String DATA_LINE_NUMBER = "Data Line Number";
     public static final String FLAG = "deleted";
     public static final String SUCCESS_DETAILS = "success details";
+    public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+    public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
+    public static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
+    public static final String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
+    public static final String DATA_COUNT = "Data Count";
 
 }

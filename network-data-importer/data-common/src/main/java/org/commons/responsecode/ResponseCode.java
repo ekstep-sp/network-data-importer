@@ -22,7 +22,8 @@ public enum ResponseCode {
     expiredTokenError(403, "Forbidden", "User Token expired. Please create and provide a new {0}."),
     dataRetrievingError(500,"Get Data Error","Failed to read data from the database"),
     dataProcessingError(500,"Process Data Error","Failed to process data"),
-    FileCreationError(500,"File Creation Error","Unable to Build file for the data");
+    FileCreationError(500,"File Creation Error","Unable to Build file for the data"),
+    unsupportedObject(400,"Unsupported Object","Only Objects of Request Class in supported in the RequestRouter Class");
 
 
     private int responseCode;

@@ -1,4 +1,4 @@
-package org.dataexporter.actors.data.dao.impl;
+package org.dataexporter.actors.dataextractor.dao.impl;
 
 import org.commons.database.Neo4jConnectionManager;
 import org.commons.exception.ProjectCommonException;
@@ -6,7 +6,8 @@ import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
 import org.commons.responsecode.ResponseCode;
-import org.dataexporter.actors.data.dao.DataManagementDao;
+import org.commons.util.Constants;
+import org.dataexporter.actors.dataextractor.dao.DataExtractorManagementDao;
 import org.neo4j.driver.internal.value.NodeValue;
 import org.neo4j.driver.internal.value.NullValue;
 import org.neo4j.driver.internal.value.RelationshipValue;
@@ -18,14 +19,14 @@ import org.neo4j.driver.v1.types.Relationship;
 
 import java.util.*;
 
-public class DataManagementDaoImpl implements DataManagementDao {
+public class DataExtractorManagementDaoImpl implements DataExtractorManagementDao {
 
     private List<List<String>> header;
     private List<List<List<String>>> data;
     private List<List<String>> dataEach;
 
 
-    public DataManagementDaoImpl() {
+    public DataExtractorManagementDaoImpl() {
 
         header = new ArrayList<>();
         data = new ArrayList<>();
@@ -48,13 +49,13 @@ public class DataManagementDaoImpl implements DataManagementDao {
         Session session = Neo4jConnectionManager.getSession();
 
             try {
-                StringBuilder query = new StringBuilder("MATCH (a)-[r]->(b)");
+                StringBuilder query = new StringBuilder("MATCH (a)-[r]->(b) WHERE a."+ Constants.FLAG +"=false AND b."+ Constants.FLAG +"=false AND r."+ Constants.FLAG +"=false");
                 query.append(" RETURN a,b,r");
                 ProjectLogger.log("Query generated to get all Nodes having Relationships : " + query, LoggerEnum.INFO.name());
 
                 StatementResult resultWithRelation = session.run(query.toString());
 
-                query = new StringBuilder("MATCH (c) WHERE NOT (c)-[]-()");
+                query = new StringBuilder("MATCH (c) WHERE NOT (c)-[]-() AND c."+ Constants.FLAG +"=false");
                 query.append(" RETURN c");
                 ProjectLogger.log("Query generated to get all Nodes having No Relationships : " + query, LoggerEnum.INFO.name());
 

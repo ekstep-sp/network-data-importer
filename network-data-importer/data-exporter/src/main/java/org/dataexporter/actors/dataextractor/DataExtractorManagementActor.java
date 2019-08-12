@@ -1,4 +1,4 @@
-package org.dataexporter.actors.data;
+package org.dataexporter.actors.dataextractor;
 
 import akka.actor.Props;
 import akka.actor.UntypedActor;
@@ -11,8 +11,8 @@ import org.commons.request.Request;
 import org.commons.response.Response;
 import org.commons.responsecode.ResponseCode;
 import org.commons.util.Constants;
-import org.dataexporter.actors.data.dao.DataManagementDao;
-import org.dataexporter.actors.data.dao.impl.DataManagementDaoImpl;
+import org.dataexporter.actors.dataextractor.dao.DataExtractorManagementDao;
+import org.dataexporter.actors.dataextractor.dao.impl.DataExtractorManagementDaoImpl;
 import org.dataexporter.actors.node.NodeManagementActor;
 
 import java.io.File;
@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class DataManagementActor extends UntypedActor {
+public class DataExtractorManagementActor extends UntypedActor {
 
-    DataManagementDao dataManagementDao;
+    DataExtractorManagementDao dataManagementDao;
 
     public static Props props() {
         ProjectLogger.log("Inside DataManagement props() method : Creating New Actor", LoggerEnum.DEBUG.name());
@@ -51,8 +51,8 @@ public class DataManagementActor extends UntypedActor {
         }
     }
 
-    public DataManagementActor()  {
-        dataManagementDao = new DataManagementDaoImpl();
+    public DataExtractorManagementActor()  {
+        dataManagementDao = new DataExtractorManagementDaoImpl();
 
     }
 
@@ -62,16 +62,15 @@ public class DataManagementActor extends UntypedActor {
         ProjectLogger.log("Get All Data method called", LoggerEnum.DEBUG.name());
         try {
             Map<String, Object> requestMap = request.getRequest();
-            dataManagementDao = new DataManagementDaoImpl();
+            dataManagementDao = new DataExtractorManagementDaoImpl();
 
             Response response = dataManagementDao.getAllData();
             if (response.getSuccessCount() != 0)
             {
-                ProjectLogger.log("File Data : " + response.getResponse().toString(), LoggerEnum.DEBUG.name());
             SimpleDateFormat formatter = new SimpleDateFormat(Constants.FILE_DATE_TIME_FORMAT);
             Date date = new Date();
 //            File file = File.createTempFile(formatter.format(date) + "_", ".csv");
-                File file = new File(Files.createTempDir(),formatter.format(date)+".csv");
+                File file = new File(Files.createTempDir(),"Visualizer-Data-"+formatter.format(date)+".csv");
             try {
                 // create FileWriter object with file as parameter
                 FileWriter outputFile = new FileWriter(file);

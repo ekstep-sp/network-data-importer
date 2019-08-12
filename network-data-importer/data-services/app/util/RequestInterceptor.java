@@ -30,6 +30,9 @@ public class RequestInterceptor implements play.http.ActionCreator {
         openUrlList = new ArrayList<>();
         openUrlList.add("/v1/auth/create");
         openUrlList.add("/v1/data/read");
+        openUrlList.add("/");
+        openUrlList.add("/health");
+        openUrlList.add("/database/health");
 
         tokenKeys = new ArrayList<>();
         tokenKeys.add("user-token");
@@ -83,9 +86,9 @@ public class RequestInterceptor implements play.http.ActionCreator {
 
     private void addResponseHeaderData(Http.Context ctx)
     {
-        ctx.response().setHeader("Access-Control-Allow-Origin","*");
-        ctx.response().setHeader("Access-Control-Allow-Methods", "*");
-        ctx.response().setHeader("Access-Control-Allow-Headers", "*");
-        ctx.response().setHeader("Access-Control-Allow-Credentials", "true");
+//        ctx.response().setHeader("Access-Control-Allow-Origin","*");
+//        ctx.response().setHeader("Access-Control-Allow-Methods", "*");
+//        ctx.response().setHeader("Access-Control-Allow-Headers", "*");
+//        ctx.response().setHeader("Access-Control-Allow-Credentials", "true");
     }
 }
