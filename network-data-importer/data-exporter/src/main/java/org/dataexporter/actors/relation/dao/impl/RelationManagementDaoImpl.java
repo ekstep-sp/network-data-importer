@@ -185,8 +185,8 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                         for (int i = 5; i < header.size(); i++) {
                             if (!relationDetailEach.get(i).isEmpty()) {
                                 query.append("r.`").append(header.get(i).trim());
-                                if(relationDetailEach.get(i).trim().toLowerCase().equals("null"))
-                                    query.append("` = ").append(relationDetailEach.get(i).trim());
+                                if(relationDetailEach.get(i).trim().toLowerCase().equals(Constants.DELETE_DATA))
+                                    query.append("` = ").append("null");
                                 else
                                     query.append("` = \"").append(relationDetailEach.get(i).trim()).append("\"");
                                 query.append(",");

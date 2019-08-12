@@ -33,5 +33,6 @@ public final class Constants {
     public static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
     public static final String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
     public static final String DATA_COUNT = "Data Count";
+    public static final String DELETE_DATA = "null";
 
 }

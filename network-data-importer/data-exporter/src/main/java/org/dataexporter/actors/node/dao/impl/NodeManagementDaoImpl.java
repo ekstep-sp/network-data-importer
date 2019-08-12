@@ -235,6 +235,9 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                         for (int i = 2; i < header.size(); i++) {
                             if (!nodeDetailsEach.get(i).isEmpty()) {
                                 query.append("a.`").append(header.get(i).trim());
+                                if(nodeDetailsEach.get(i).trim().toLowerCase().equals(Constants.DELETE_DATA))
+                                    query.append("`=").append("null");
+                                else
                                 query.append("`=\"").append(nodeDetailsEach.get(i).trim()).append("\"");
                                 query.append(",");
                                 check = true;
