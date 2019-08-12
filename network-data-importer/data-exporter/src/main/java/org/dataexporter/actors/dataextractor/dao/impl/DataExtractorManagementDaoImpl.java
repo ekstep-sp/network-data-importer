@@ -49,13 +49,16 @@ public class DataExtractorManagementDaoImpl implements DataExtractorManagementDa
         Session session = Neo4jConnectionManager.getSession();
 
             try {
-                StringBuilder query = new StringBuilder("MATCH (a)-[r]->(b) WHERE a."+ Constants.FLAG +"=false AND b."+ Constants.FLAG +"=false AND r."+ Constants.FLAG +"=false");
+//                StringBuilder query = new StringBuilder("MATCH (a)-[r]->(b) WHERE a."+ Constants.FLAG +"=false AND b."+ Constants.FLAG +"=false AND r."+ Constants.FLAG +"=false");
+                StringBuilder query = new StringBuilder("MATCH (a)-[r]->(b)");
                 query.append(" RETURN a,b,r");
                 ProjectLogger.log("Query generated to get all Nodes having Relationships : " + query, LoggerEnum.INFO.name());
 
                 StatementResult resultWithRelation = session.run(query.toString());
 
-                query = new StringBuilder("MATCH (c) WHERE NOT (c)-[]-() AND c."+ Constants.FLAG +"=false");
+//                query = new StringBuilder("MATCH (c) WHERE NOT (c)-[]-() AND c."+ Constants.FLAG +"=false");
+                query = new StringBuilder("MATCH (c) WHERE NOT (c)-[]-()");
+
                 query.append(" RETURN c");
                 ProjectLogger.log("Query generated to get all Nodes having No Relationships : " + query, LoggerEnum.INFO.name());
 
