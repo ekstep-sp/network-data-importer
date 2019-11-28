@@ -1,6 +1,5 @@
 package org.commons.database;
 
-import javafx.beans.binding.ObjectBinding;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
@@ -15,9 +14,15 @@ public class Neo4jConnectionManager {
 
     private static Session session;
     private static Driver driver;
+    private static Transaction transaction;
     private static PropertiesCache propertiesCache;
 
     static {
+
+        Config config = Config.builder()
+                .withTrustStrategy( Config.TrustStrategy.trustAllCertificates())
+                .withoutEncryption()
+                .build();
         propertiesCache = PropertiesCache.getInstance();
         ProjectLogger.log("Creating connection with the Neo4j Database", LoggerEnum.DEBUG.name());
         // Checking if the Neo4j Url is provided
@@ -27,11 +32,11 @@ public class Neo4jConnectionManager {
                 try {
                     // Trying to create connection with an open Neo4j database
                     url = propertiesCache.getProperty("neo4j_url");
-                    driver = GraphDatabase.driver(url);
+                    driver = GraphDatabase.driver(url,config);
                     ProjectLogger.log("Connection created with the Neo4j Database successfully", LoggerEnum.INFO.name());
                 } catch (AuthenticationException e) {
                         driver = GraphDatabase.driver(
-                                url, AuthTokens.basic(propertiesCache.getProperty("neo4j_username"), propertiesCache.getProperty("neo4j_password")));
+                                url, AuthTokens.basic(propertiesCache.getProperty("neo4j_username"), propertiesCache.getProperty("neo4j_password")),config);
                         ProjectLogger.log("Connection created with the Neo4j Database successfully", LoggerEnum.INFO.name());
 
                 }
@@ -49,28 +54,27 @@ public class Neo4jConnectionManager {
         }
     }
 
-    public static Session getSession() {
 
-        try {
+    public static void getSession() throws ProjectCommonException {
+
             session = driver.session();
-            if(session ==null || !session.isOpen())
-            {
+            if(session ==null || !session.isOpen()) {
                 ProjectLogger.log("Error, session could not be instantiated in neo4j", LoggerEnum.ERROR.name());
                 throw new ProjectCommonException(ResponseCode.databaseSessionCreationError);
             }
-        }
-        catch (ProjectCommonException e)
-        {
-            throw e;
-        }
-        catch (Exception | Error e)
-        {
-            ProjectLogger.log("Error in database while creating session", LoggerEnum.ERROR.name());
-            throw new ProjectCommonException(ResponseCode.databaseConnectionError);
-        }
-        return session;
     }
 
+    public static Transaction getSessionTransaction() {
+
+        if(session == null || !session.isOpen()) {
+            getSession();
+        }
+        if(transaction == null || !transaction.isOpen()) {
+            transaction = session.beginTransaction();
+        }
+
+            return transaction;
+    }
 
 
 
@@ -78,9 +82,9 @@ public class Neo4jConnectionManager {
     public static boolean checkDatabaseConnectionStatus() {
 
         // To check if the database is connected or not
-        Session session = driver.session();
+        Transaction transaction = getSessionTransaction();
         boolean check = false;
-        StatementResult result = session.run("RETURN true ;");
+        StatementResult result = transaction.run("RETURN true ;");
         if(result.hasNext()) {
             Record record = result.next();
             Map<String, Object> data = record.asMap();

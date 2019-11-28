@@ -15,6 +15,7 @@ public class AuthenticationRequestValidator {
 
         try {
             Map<String, String[]> body = request.body().asFormUrlEncoded();
+
             if (body == null || body.isEmpty())
                 throw new ProjectCommonException(ResponseCode.mandatoryParametersMissing, Constants.ISSUER,Constants.SUBJECT);
 

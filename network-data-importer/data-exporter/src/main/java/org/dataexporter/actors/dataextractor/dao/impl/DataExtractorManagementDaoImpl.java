@@ -8,12 +8,14 @@ import org.commons.response.Response;
 import org.commons.responsecode.ResponseCode;
 import org.commons.util.Constants;
 import org.dataexporter.actors.dataextractor.dao.DataExtractorManagementDao;
+import org.neo4j.driver.internal.util.Futures;
 import org.neo4j.driver.internal.value.NodeValue;
 import org.neo4j.driver.internal.value.NullValue;
 import org.neo4j.driver.internal.value.RelationshipValue;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.Transaction;
 import org.neo4j.driver.v1.types.Node;
 import org.neo4j.driver.v1.types.Relationship;
 
@@ -46,7 +48,7 @@ public class DataExtractorManagementDaoImpl implements DataExtractorManagementDa
         header.get(1).add("Target Label");
         header.get(2).add("Relationship Label");
 
-        Session session = Neo4jConnectionManager.getSession();
+        Transaction transaction = Neo4jConnectionManager.getSessionTransaction();
 
             try {
 //                StringBuilder query = new StringBuilder("MATCH (a)-[r]->(b) WHERE a."+ Constants.FLAG +"=false AND b."+ Constants.FLAG +"=false AND r."+ Constants.FLAG +"=false");
@@ -54,7 +56,7 @@ public class DataExtractorManagementDaoImpl implements DataExtractorManagementDa
                 query.append(" RETURN a,b,r");
                 ProjectLogger.log("Query generated to get all Nodes having Relationships : " + query, LoggerEnum.INFO.name());
 
-                StatementResult resultWithRelation = session.run(query.toString());
+                StatementResult resultWithRelation = transaction.run(query.toString());
 
 //                query = new StringBuilder("MATCH (c) WHERE NOT (c)-[]-() AND c."+ Constants.FLAG +"=false");
                 query = new StringBuilder("MATCH (c) WHERE NOT (c)-[]-()");
@@ -62,12 +64,13 @@ public class DataExtractorManagementDaoImpl implements DataExtractorManagementDa
                 query.append(" RETURN c");
                 ProjectLogger.log("Query generated to get all Nodes having No Relationships : " + query, LoggerEnum.INFO.name());
 
-                StatementResult resultWithoutRelation = session.run(query.toString());
+                StatementResult resultWithoutRelation = transaction.run(query.toString());
                 if (!(resultWithRelation.hasNext() || resultWithoutRelation.hasNext())) {
                     ProjectLogger.log("No Data found in the Database", LoggerEnum.INFO.name());
                     response.addSuccessData("Success", "No Data Found");
                     return response;
                 } else {
+                    transaction.success();
                     try {
                     if (resultWithRelation.hasNext()) {
                         List<Record> recordList = resultWithRelation.list();
@@ -128,7 +131,8 @@ public class DataExtractorManagementDaoImpl implements DataExtractorManagementDa
             response.addSuccessData("Success","Successfully read data");
             response.addSuccessData("header",header);
             response.addSuccessData("data",data);
-        session.close();
+        Futures.blockingGet(transaction.commitAsync(), () -> {});
+//        transaction.close();
 
         return response;
 

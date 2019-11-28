@@ -55,6 +55,10 @@ public BaseController() {
     protected CompletionStage<Object> handleCustomRequest(Request request,HttpExecutionContext httpExecutionContext,String className) {
     // To handle the custom request generated after reading the file from the request by using the Actor Model System of Data-Exporter
 
+//        for(int i=0 ; i<3 ; i++)
+//        {
+//            actorRef.tell(request,ActorRef.noSender());
+//        }
         request.setActorClassName(className);
         return FutureConverters.toJava(
                 Patterns.ask(actorRef, request, timeout))
@@ -72,7 +76,7 @@ public BaseController() {
 //                        return ok(Json.toJson(responseMap));
                     }
                     else {
-                        ProjectLogger.log("Unknown response from the Actor", LoggerEnum.WARN.name());
+                        ProjectLogger.log("Unknown response from the Actor "+response, LoggerEnum.WARN.name());
                         ProjectCommonException exc = new ProjectCommonException(ResponseCode.internalServerError);
                         return Results.status(exc.getResponseCode(),Json.toJson(exc.toMap()));
                     }

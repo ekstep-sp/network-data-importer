@@ -21,9 +21,13 @@ public class ErrorHandler implements HttpErrorHandler {
         // To handle all client errors in the project
 
         ProjectLogger.log("Global: onClientError called for path = " + request.path(), LoggerEnum.ERROR.name());
-        if(statusCode == 404)
-            message = Constants.API_NOT_FOUND;
-        ProjectCommonException commonException = new ProjectCommonException(statusCode, "Client Error", message);
+        ProjectCommonException commonException;
+        if(statusCode == 404) {
+            commonException = new ProjectCommonException(ResponseCode.apiNotFound);
+        }
+        else {
+            commonException = new ProjectCommonException(statusCode, "Client Error", message);
+        }
         ProjectLogger.log("Client Error", commonException, LoggerEnum.ERROR.name());
         Result result = Results.status(commonException.getResponseCode(), Json.toJson(commonException.toMap()));
         result.withHeader(Constants.ACCESS_CONTROL_ALLOW_ORIGIN,"*");

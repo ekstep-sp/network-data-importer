@@ -2,7 +2,7 @@ package controllers.relation;
 
 import com.google.inject.Inject;
 import controllers.BaseController;
-import controllers.relation.validator.NodeRelationRequestValidator;
+import controllers.relation.validator.RelationRequestValidator;
 import org.commons.exception.ProjectCommonException;
 import org.commons.logger.LoggerEnum;
 import org.commons.logger.ProjectLogger;
@@ -22,17 +22,17 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-public class NodeRelationController extends BaseController {
+public class RelationController extends BaseController {
     // to handle all Node Relation related requests
 
     private HttpExecutionContext httpExecutionContext;
 
-    public NodeRelationController() {
+    public RelationController() {
 
     }
 
     @Inject
-    public NodeRelationController(HttpExecutionContext ec) {
+    public RelationController(HttpExecutionContext ec) {
         this.httpExecutionContext = ec;
     }
 
@@ -60,7 +60,7 @@ public class NodeRelationController extends BaseController {
         // To process any Node Relationship request generated
         Request customRequest;
         try {
-            new NodeRelationRequestValidator().validateNodeRelationRequest(request);
+            new RelationRequestValidator().validateNodeRelationRequest(request);
             Http.MultipartFormData body = request.body().asMultipartFormData();
             Http.MultipartFormData.FilePart<File> filePart = body.getFile(Constants.DATA);
             Map<String, Object> nodeRelationData = new DataImportManagement().importData(filePart.getFilename(), filePart.getFile());

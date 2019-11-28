@@ -1,0 +1,3 @@
+Source Label,Name,Target Label,Name,Relationship Label,since
+Organisation,Niit Technologies,Organisation,Niit Limited,Part_Of,1996
+Organisation,Oracle,Organisation,Google,In Collaboration,2000

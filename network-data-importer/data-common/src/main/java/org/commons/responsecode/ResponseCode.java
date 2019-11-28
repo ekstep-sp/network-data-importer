@@ -3,10 +3,11 @@ package org.commons.responsecode;
 public enum ResponseCode {
 
     actorTimeoutError(408,"Actor Connection Error", "Service is not able to connect with actor."),
+    apiNotFound(404,"Client Error","Api Not Found"),
     internalServerError(500,"Internal Server Error", "Process failed,please try again later."),
-    unAuthorized(401, "Unauthorised", "User Authentication required. Please provide the 'user-token'."),
+    unAuthorized(401, "Unauthorized", "User Authentication required. Please provide the 'user-token'."),
     mandatoryParameterMissing(400,"Mandatory Parameter Missing","Please provide parameter {0}."),
-    mandatoryParametersMissing(400,"Mandatory Parameters Missing","Please provide parameter '{0}' and {1}."),
+    mandatoryParametersMissing(400,"Mandatory Parameters Missing","Please provide parameter {0} and {1}."),
     multipleFilesFoundException(400,"Multiple Files Found","Please provide a single File in parameter {0} "),
     databaseSessionCreationError(502,"Database Error","Unable to create a session with the Neo4j Driver."),
     databaseConnectionError(502,"Internal Server Error","Failed to establish connection with Neo4j database."),

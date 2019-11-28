@@ -50,10 +50,7 @@ public class PropertiesCache {
 
     public static PropertiesCache getInstance() {
         if (null == propertiesCache) {
-            Class var0 = PropertiesCache.class;
-                if (null == propertiesCache) {
-                    propertiesCache = new PropertiesCache();
-            }
+            propertiesCache = new PropertiesCache();
         }
 
         return propertiesCache;

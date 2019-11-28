@@ -5,7 +5,7 @@ import org.commons.responsecode.ResponseCode;
 import org.commons.util.Constants;
 import play.mvc.Http;
 
-public class NodeRelationRequestValidator {
+public class RelationRequestValidator {
 
     public void validateNodeRelationRequest(Http.Request request) throws ProjectCommonException {
 

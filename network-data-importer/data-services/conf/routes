@@ -23,11 +23,11 @@ PATCH       /v1/node/update                   controllers.node.NodeController.up
 POST      /v1/node/delete                   controllers.node.NodeController.deleteNode()
 
 # All Node Relation Request routes
-POST        /v1/node/relation/create          controllers.relation.NodeRelationController.createNodeRelation()
+POST        /v1/relation/create          controllers.relation.RelationController.createNodeRelation()
 
-PATCH       /v1/node/relation/update          controllers.relation.NodeRelationController.updateNodeRelation()
+PATCH       /v1/relation/update          controllers.relation.RelationController.updateNodeRelation()
 
-POST      /v1/node/relation/delete          controllers.relation.NodeRelationController.deleteNodeRelation()
+POST      /v1/relation/delete          controllers.relation.RelationController.deleteNodeRelation()
 
 # All JWT Authentication Request routes
 POST        /v1/auth/create                   controllers.auth.AuthenticationController.createUserToken()

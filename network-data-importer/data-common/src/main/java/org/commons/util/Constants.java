@@ -8,7 +8,6 @@ public final class Constants {
 
     public static final String DATA = "data";
     public static final String ACTOR_SYSTEM = "network-visualizer";
-    public static final String API_NOT_FOUND= "Api Not Found";
     public static final String ISSUER = "issuer";
     public static final String SUBJECT = "subject";
     public static final String USER_TOKEN = "user-token";

@@ -7,12 +7,14 @@ import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
 import org.commons.util.Constants;
 import org.dataexporter.actors.relation.dao.RelationManagementDao;
+import org.neo4j.driver.internal.util.Futures;
 import org.neo4j.driver.internal.value.NodeValue;
 import org.neo4j.driver.internal.value.NullValue;
 import org.neo4j.driver.internal.value.RelationshipValue;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.Transaction;
 
 import java.util.*;
 
@@ -38,7 +40,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
 
         header = (List<String>) relationData.get("header");
         dataList = (List<List<String>>) relationData.get("data");
-        Session session = Neo4jConnectionManager.getSession();
+        Transaction transaction = Neo4jConnectionManager.getSessionTransaction();
 
         for(List<String> relationDetailEach : dataList) {
 
@@ -64,7 +66,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                 query.append("]-(b) RETURN a,b,r");
                 ProjectLogger.log("Query generated to check if Node Relation already exists : " + query, LoggerEnum.INFO.name());
 
-                result = session.run(query.toString());
+                result = transaction.run(query.toString());
                 List<Record> recordList = result.list();
                 Record record = null;
                 if(recordList.size()==1)
@@ -104,8 +106,9 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                         query.append("}]->(b) RETURN r");
 
                         ProjectLogger.log("Query generated to Create Node Relation : " + query, LoggerEnum.INFO.name());
-                        result = session.run(query.toString());
+                        result = transaction.run(query.toString());
                         if (result.hasNext()) {
+                            transaction.success();
                             record = result.next();
                             RelationshipValue relation = (RelationshipValue) record.get(0);
                             ProjectLogger.log("Node Relation created successfully : "+relation.asMap(), LoggerEnum.INFO.name());
@@ -131,7 +134,8 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                 response.addErrorData("Error in data",dataCount+1);
             }
         }
-        session.close();
+        Futures.blockingGet(transaction.commitAsync(), () -> {});
+//        transaction.close();
         return response;
 
     }
@@ -147,7 +151,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
         header = (List<String>) relationData.get("header");
         dataList = (List<List<String>>) relationData.get("data");
         Record record;
-        Session session = Neo4jConnectionManager.getSession();
+        Transaction transaction = Neo4jConnectionManager.getSessionTransaction();
 
         for(List<String> relationDetailEach : dataList) {
 
@@ -165,7 +169,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                 query.append(" RETURN r");
                 ProjectLogger.log("Query generated to check Node Relation Existence : " + query, LoggerEnum.INFO.name());
 
-                result = session.run(query.toString());
+                result = transaction.run(query.toString());
                 if(result.hasNext()) {
                     // Check if the relationship exists between Nodes
                     List<Record> recordList = result.list();
@@ -200,8 +204,9 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                         query.append(" RETURN r");
 
                         ProjectLogger.log("Query generated to Update Node Relation : "+query, LoggerEnum.INFO.name());
-                        result = session.run(query.toString());
+                        result = transaction.run(query.toString());
                         if (result.hasNext()) {
+                            transaction.success();
                             record = result.next();
                             RelationshipValue relation = (RelationshipValue) record.get(0);
                             ProjectLogger.log("Node Relation updated successfully : "+relation.asMap(), LoggerEnum.INFO.name());
@@ -221,7 +226,8 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                 response.addErrorData("Error in data",dataCount+1);
             }
         }
-        session.close();
+        Futures.blockingGet(transaction.commitAsync(), () -> {});
+//        transaction.close();
         return response;
     }
 
@@ -236,7 +242,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
         header = (List<String>) relationData.get("header");
         dataList = (List<List<String>>) relationData.get("data");
         Record record;
-        Session session = Neo4jConnectionManager.getSession();
+        Transaction transaction = Neo4jConnectionManager.getSessionTransaction();
 
         for(List<String> relationDetailEach : dataList) {
 
@@ -247,7 +253,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                 boolean check = false;
                 StringBuilder query = new StringBuilder("MATCH (a:`" + relationDetailEach.get(0).trim() + "` {`" + header.get(1).trim() + "`: \"" + relationDetailEach.get(1).trim() + "\"");
                 query.append(","+ Constants.FLAG +":false");
-                query.append("}),");
+                query.append("})");
                 query.append("-[r: `").append(relationDetailEach.get(4).trim()).append("` {");
                 for (int i = 5; i < header.size(); i++) {
                     if (!relationDetailEach.get(i).isEmpty()) {
@@ -266,7 +272,7 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                 query.append("(b:`").append(relationDetailEach.get(2).trim()).append("` {`").append(header.get(3).trim()).append("`: \"").append(relationDetailEach.get(3).trim()).append("\"");
                 query.append(","+ Constants.FLAG +":false");
                 query.append("})");
-                result = session.run(query.toString()+" RETURN r");
+                result = transaction.run(query.toString()+" RETURN r");
                 if(result.hasNext()) {
                     // Check if the relationship exists between Nodes
                     List<Record> recordList = result.list();
@@ -282,10 +288,11 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
 //                        query.append(" DELETE r");
 
                         ProjectLogger.log("Query generated to DELETE Node Relation : "+query+" SET r."+Constants.FLAG+"=true", LoggerEnum.INFO.name());
-                        result = session.run(query.toString()+" SET r."+Constants.FLAG+"=true");
+                        result = transaction.run(query.toString()+" SET r."+Constants.FLAG+"=true"+" RETURN r");
                         if (result.hasNext()) {
+                            transaction.success();
                             record = result.next();
-                            ProjectLogger.log("Node Relation deleted successfully : " + record.asMap(), LoggerEnum.INFO.name());
+                            ProjectLogger.log("Node Relation deleted successfully : " + record.get(0).asMap(), LoggerEnum.INFO.name());
                         }
 
                         response.addSuccess();
@@ -302,7 +309,8 @@ public class RelationManagementDaoImpl implements RelationManagementDao {
                 response.addErrorData("Error in data",dataCount+1);
             }
         }
-        session.close();
+        Futures.blockingGet(transaction.commitAsync(), () -> {});
+//        transaction.close();
         return response;
     }
 

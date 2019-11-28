@@ -7,6 +7,7 @@ import org.commons.logger.ProjectLogger;
 import org.commons.response.Response;
 import org.commons.util.Constants;
 import org.dataexporter.actors.node.dao.NodeManagementDao;
+import org.neo4j.driver.internal.util.Futures;
 import org.neo4j.driver.internal.value.NodeValue;
 import org.neo4j.driver.v1.*;
 import java.util.*;
@@ -32,7 +33,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
         header = (List<String>) nodeData.get("header");
         dataList = (List<List<String>>) nodeData.get("data");
 
-        Session session = Neo4jConnectionManager.getSession();
+        Transaction transaction = Neo4jConnectionManager.getSessionTransaction();
 
         for(List<String> nodeDetailsEach : dataList) {
 
@@ -52,7 +53,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 ProjectLogger.log("Query generated to Check if Node already Exists : "+query, LoggerEnum.INFO.name());
 
 
-                result = session.run(query.toString());
+                result = transaction.run(query.toString());
                 if(result.hasNext()) {
 
                     Record record = result.next();
@@ -97,8 +98,9 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
 
 
 
-                    result = session.run(query.toString());
+                    result = transaction.run(query.toString());
                     if (result.hasNext()) {
+                        transaction.success();
                         Record record = result.next();
                         NodeValue node = (NodeValue) record.get(0);
                         ProjectLogger.log("Node created successfully : "+node.asMap(), LoggerEnum.INFO.name());
@@ -185,6 +187,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 response.addErrorData("Error in data",dataCount+1);
             }
         }
+        Futures.blockingGet(transaction.commitAsync(), () -> {});
+//        transaction.close();
         return response;
     }
 
@@ -200,7 +204,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
         header = (List<String>) nodeData.get("header");
         dataList = (List<List<String>>) nodeData.get("data");
 
-        Session session = Neo4jConnectionManager.getSession();
+        Transaction transaction = Neo4jConnectionManager.getSessionTransaction();
+//        Transaction transaction = session.beginTransaction();
         Record record;
         for(List<String> nodeDetailsEach : dataList) {
 
@@ -214,7 +219,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 query.append("}) RETURN a");
                 ProjectLogger.log("Query generated to Update Node : "+query, LoggerEnum.INFO.name());
 
-                result = session.run(query.toString());
+                result = transaction.run(query.toString());
                 if(result.hasNext()) {
                     // Check if the Node Exists
                     List<Record> recordList = result.list();
@@ -250,8 +255,9 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                         query.append(" RETURN a");
 
                         ProjectLogger.log("Query generated to Update Node : "+query, LoggerEnum.INFO.name());
-                        result = session.run(query.toString());
+                        result = transaction.run(query.toString());
                         if (result.hasNext()) {
+                            transaction.success();
                             record = result.next();
                             NodeValue node = (NodeValue) record.get(0);
                             ProjectLogger.log("Node updated successfully : "+node.asMap(), LoggerEnum.INFO.name());
@@ -272,6 +278,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 response.addErrorData("Error in data",dataCount+1);
             }
         }
+        Futures.blockingGet(transaction.commitAsync(), () -> {});
+//        transaction.close();
         return response;
     }
 
@@ -289,7 +297,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
         dataList = (List<List<String>>) nodeData.get("data");
 
         Record record;
-        Session session = Neo4jConnectionManager.getSession();
+        Transaction transaction = Neo4jConnectionManager.getSessionTransaction();
             for (List<String> nodeDetailsEach : dataList) {
 
             dataCount++;
@@ -314,7 +322,7 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 query.append(" })");
 
 
-                result = session.run(query.toString() + " RETURN a");
+                result = transaction.run(query.toString() + " RETURN a");
                 if (result.hasNext()) {
                     // Check if the Node Exists
                     List<Record> recordList = result.list();
@@ -328,13 +336,14 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
 //                        query.append(" DETACH DELETE a");
 
                         ProjectLogger.log("Query generated to DELETE Node Relationships : " + query+",(a)-[r]-() SET r."+ Constants.FLAG+"=true", LoggerEnum.INFO.name());
-                        session.run(query.toString()+",(a)-[r]-() SET r."+ Constants.FLAG+"=true");
+                        transaction.run(query.toString()+",(a)-[r]-() SET r."+ Constants.FLAG+"=true");
 
                         ProjectLogger.log("Query generated to DELETE Node : " + query+" SET a."+Constants.FLAG+"=true", LoggerEnum.INFO.name());
-                        result = session.run(query.toString()+" SET a."+Constants.FLAG+"=true");
+                        result = transaction.run(query.toString()+" SET a."+Constants.FLAG+"=true"+" RETURN a");
                         if (result.hasNext()) {
+                            transaction.success();
                             record = result.next();
-                            ProjectLogger.log("Node deleted successfully : " + record.asMap(), LoggerEnum.INFO.name());
+                            ProjectLogger.log("Node deleted successfully : " + record.get(0).asMap(), LoggerEnum.INFO.name());
                         }
 
                         response.addSuccess();
@@ -349,6 +358,8 @@ public class NodeManagementDaoImpl implements NodeManagementDao {
                 response.addErrorData("Error in data", dataCount + 1);
             }
         }
+        Futures.blockingGet(transaction.commitAsync(), () -> {});
+//        transaction.close();
         return response;
     }
 
